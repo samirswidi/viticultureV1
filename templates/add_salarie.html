@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Ajouter un salarié </h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flashes">
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+  
+    <form action="{{ url_for('add_salarie') }}" method="POST">
+       
+        <div class="input-field">
+            <input type="text" name="identifiant" id="identifiant" required>
+            <label>Identifiant salarié(unique):</label>
+        </div>
+        <div class="input-field">
+            <input type="text" name="nom" id="nom" required>
+            <label>Nom salarié:</label>
+        </div>
+        <div class="input-field">
+            <input type="text" name="prenom" id="prenom" required>
+            <label>Préom salarié:</label>
+        </div>
+        <div class="input-field">
+            <input type="date"  name="date_embauche" id="date_embauche" required>
+            <label>Date embauche</label>
+        </div>
+        <div >
+            <label>Exploitation:</label>
+            <select id="id_exploitation" name="id_exploitation" required>
+                <option value="">Sélectionnez une exploitation</option>
+                {% for exploitation in exploitations %}
+                    <option value="{{ exploitation.id_exploitation }}">{{ exploitation.nom_exploitation }}</option>
+                {% endfor %}
+            </select>
+           
+        </div>
+        <button class="button"  type="submit">Ajouter</button>
+      
+    </form>
+{% endblock %}

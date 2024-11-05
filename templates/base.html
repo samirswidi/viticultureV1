@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.css">
+
+<!-- Inclure jQuery (nécessaire pour DataTables) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Inclure JS de DataTables -->
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.js"></script>
+    <title>Gestion Agricole</title>
+</head>
+<body>
+    <header>
+        <h1>Gestion d'une viticulture</h1>
+        <nav>
+            <ul>
+                <li class="dropdown">
+                    <a href="javascript:void(0)" class="dropbtn">Exploitations</a>
+                    <ul class="dropdown-content">
+                        <li><a href="{{ url_for('exploitations') }}">Liste Exploitations</a></li>
+                        <li><a href="{{ url_for('add_exploitation') }}">Ajouter Exploitation</a></li>
+                    </ul>
+                </li>
+                {% if session.get('admin')=="admin" %} 
+             
+                <li class="dropdown">
+                    <a href="javascript:void(0)" class="dropbtn">Chefs d'exploitation</a>
+                    <ul class="dropdown-content">
+                        <li><a href="{{ url_for('chefs_exploitation') }}">Liste Chefs d'exploitation</a></li>
+                        <li><a href="{{ url_for('add_chef_exploitation') }}">Ajouter Chef d'exploitation</a></li>
+                    </ul>
+                </li>
+                {% endif %}
+                <li class="dropdown">
+                    <a href="javascript:void(0)" class="dropbtn">Salariés </a>
+                    <ul class="dropdown-content">
+                        <li><a href="{{ url_for('salaries') }}">Liste des salariés</a></li>
+                        <li><a href="{{ url_for('add_salarie') }}">Ajouter salarié</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="javascript:void(0)" class="dropbtn">Travaux agricoles </a>
+                    <ul class="dropdown-content">
+                        <li><a href="{{ url_for('travaux') }}">Liste des Travaux agricoles</a></li>
+                        <li><a href="{{ url_for('add_travail') }}">Ajouter un Travail agricole</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="javascript:void(0)" class="dropbtn">operations phytosanitaires </a>
+                    <ul class="dropdown-content">
+                        <li><a href="">Liste des operations phytosanitaires</a></li>
+                        <li><a href="">Ajouter une operation phytosanitaire</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="javascript:void(0)" class="dropbtn">synthese annuelle </a>
+                    <ul class="dropdown-content">
+                        <li><a href="">Liste des synthese annuelle</a></li>
+                        <li><a href="">Ajouter synthese annuelle</a></li>
+                    </ul>
+                </li>
+                
+                <li class="dropdown">
+                    <a href="javascript:void(0)" class="dropbtn">Bonjour {{ session.get('admin') }} </a>
+                    <ul class="dropdown-content">
+                      
+                        <li><a href="{{ url_for('logout') }}">déconnexion</a></li>
+                    </ul>
+                </li>
+                <!-- Ajoutez d'autres liens ou dropdowns ici -->
+            </ul>
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        // JavaScript to handle the dropdown menu interaction
+        document.querySelectorAll('.dropbtn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Toggle the display of the dropdown content
+                this.nextElementSibling.classList.toggle('show');
+            });
+        });
+
+        // Close dropdown if clicked outside
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropbtn')) {
+                document.querySelectorAll('.dropdown-content').forEach(content => {
+                    if (content.classList.contains('show')) {
+                        content.classList.remove('show');
+                    }
+                });
+            }
+        }
+    </script>
+    
+<script>
+    var x, i, j, l, ll, selElmnt, a, b, c;
+    /*look for any elements with the class "custom-select":*/
+    x = document.getElementsByClassName("custom-select");
+    l = x.length;
+    for (i = 0; i < l; i++) {
+      selElmnt = x[i].getElementsByTagName("select")[0];
+      ll = selElmnt.length;
+      /*for each element, create a new DIV that will act as the selected item:*/
+      a = document.createElement("DIV");
+      a.setAttribute("class", "select-selected");
+      a.innerHTML = selElmnt.options[selElmnt.selectedIndex].innerHTML;
+      x[i].appendChild(a);
+      /*for each element, create a new DIV that will contain the option list:*/
+      b = document.createElement("DIV");
+      b.setAttribute("class", "select-items select-hide");
+      for (j = 1; j < ll; j++) {
+        /*for each option in the original select element,
+        create a new DIV that will act as an option item:*/
+        c = document.createElement("DIV");
+        c.innerHTML = selElmnt.options[j].innerHTML;
+        c.addEventListener("click", function(e) {
+            /*when an item is clicked, update the original select box,
+            and the selected item:*/
+            var y, i, k, s, h, sl, yl;
+            s = this.parentNode.parentNode.getElementsByTagName("select")[0];
+            sl = s.length;
+            h = this.parentNode.previousSibling;
+            for (i = 0; i < sl; i++) {
+              if (s.options[i].innerHTML == this.innerHTML) {
+                s.selectedIndex = i;
+                h.innerHTML = this.innerHTML;
+                y = this.parentNode.getElementsByClassName("same-as-selected");
+                yl = y.length;
+                for (k = 0; k < yl; k++) {
+                  y[k].removeAttribute("class");
+                }
+                this.setAttribute("class", "same-as-selected");
+                break;
+              }
+            }
+            h.click();
+        });
+        b.appendChild(c);
+      }
+      x[i].appendChild(b);
+      a.addEventListener("click", function(e) {
+          /*when the select box is clicked, close any other select boxes,
+          and open/close the current select box:*/
+          e.stopPropagation();
+          closeAllSelect(this);
+          this.nextSibling.classList.toggle("select-hide");
+          this.classList.toggle("select-arrow-active");
+        });
+    }
+    function closeAllSelect(elmnt) {
+      /*a function that will close all select boxes in the document,
+      except the current select box:*/
+      var x, y, i, xl, yl, arrNo = [];
+      x = document.getElementsByClassName("select-items");
+      y = document.getElementsByClassName("select-selected");
+      xl = x.length;
+      yl = y.length;
+      for (i = 0; i < yl; i++) {
+        if (elmnt == y[i]) {
+          arrNo.push(i)
+        } else {
+          y[i].classList.remove("select-arrow-active");
+        }
+      }
+      for (i = 0; i < xl; i++) {
+        if (arrNo.indexOf(i)) {
+          x[i].classList.add("select-hide");
+        }
+      }
+    }
+    /*if the user clicks anywhere outside the select box,
+    then close all select boxes:*/
+    document.addEventListener("click", closeAllSelect);
+    </script>
+    
+</body>
+</html>

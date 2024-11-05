@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Ajouter un travail agricole </h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flashes">
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+  
+  
+  
+  
+  
+  
+  
+    <form action="{{ url_for('add_travail') }}" method="POST">
+       
+       
+        <div class="input-field">
+            <input type="text"  name="duree" id="duree" required>
+            <label>Duree travail</label>
+        </div>
+        <div class="custom-select" style="width:100%">
+            <label>Operation culturale :</label>
+            <select id="operation_culturale" name="operation_culturale" required>
+                
+                
+                <option value="Fertilisation">Fertilisation</option>
+                <option value="Pulvérisation">Pulvérisation</option>
+                <option value="Labour">Labour</option>
+               
+            </select>
+           
+        </div>
+        <div class="custom-select" style="width:100%">
+            <label>Salarié:</label>
+            <select id="salarie_id" name="salarie_id" required>
+                <option value="1">Samir</option>
+               
+            </select>
+           
+        </div>
+        <div class="custom-select" style="width:100%">
+            <label>Exploitation:</label>
+            <select id="id_exploitation" name="id_exploitation" required>
+                <option value="">Sélectionnez une exploitation</option>
+                {% for exploitation in exploitations %}
+                    <option value="{{ exploitation.id_exploitation }}"
+                     >{{ exploitation.nom_exploitation }}</option>
+                {% endfor %}
+            </select>
+           
+        </div>
+        <div class="custom-select" style="width:100%">
+            <label>Operation sanitaire:</label>
+            <select id="id_operation_sanitaire" name="id_operation_sanitaire" required>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              
+            </select>
+           
+        </div>
+        <div class="custom-select" style="width:100%">
+            <label>Travail à faire:</label>
+            <select id="type_travail" name="type_travail" required>
+                <option value="">Plantation</option>
+                <option value="">Entretien</option>
+                <option value="">Récolte</option>
+                <option value="">Irrigation</option>
+              
+            </select>
+           
+        </div>
+        <button class="button"  type="submit">Ajouter</button>
+      
+    </form>
+{% endblock %}

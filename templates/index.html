@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Bienvenue sur l'interface de gestion d'une viticulture</h2>
+    <p>Utilisez le menu pour gérer 
+        les exploitations, 
+        {% if session.get('admin')=="admin" %} 
+
+        chefs d'exploitation,
+        {% endif %}
+         salariés, etc.</p>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Liste des travaux agricoles</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flashes">
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% endwith %}
+    
+    <table id="travauxTable" class="display">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type travail</th>
+                <th>Date travail</th>
+                <th>ID exploitation</th>
+                <th>Salarie ID</th>
+                <th>Opération culturale</th>
+                <th>Durée</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for travail in travaux %}
+            <tr>
+                <td>{{ travail.id_travail }}</td>
+                <td>{{ travail.type_travail }}</td>
+                <td>{{ travail.date_travail }}</td>
+                <td>{{ travail.id_exploitation }}</td>
+                <td>{{ travail.salarie_id }}</td>
+                <td>{{ travail.operation_culturale }}</td>
+                <td>{{ travail.Duree }}</td>
+                <td>
+                    <a href="{{ url_for('edit_travail', id=travail.id_travail) }}">
+                        <i class="fa fa-edit" style="font-size:20px;color:green"></i>
+                    </a>
+                    <a href="{{ url_for('delete_travail', id=travail.id_travail) }}">
+                        <i class="fa fa-trash" style="font-size:20px;color:red;"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Initialiser DataTables -->
+    <script>
+        $(document).ready(function() {
+            $('#travauxTable').DataTable();
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Modifier le Chef d'Exploitation</h2>
+    
+   
+    <form action="{{ url_for('edit_salarie', id=salarie.id_salarie) }}" method="POST">
+       
+        <div class="input-field">
+            <input type="text" name="identifiant" value="{{ salarie.identifiant_sal }}" id="identifiant" disabled>
+            <label style="    top: 0%;">Identifiant salarié(unique):</label>
+        </div>
+        <div class="input-field">
+            <input type="text" name="nom" id="nom" value="{{ salarie.nom_salarie }}" required>
+            <label>Nom salarié:</label>
+        </div>
+        <div class="input-field">
+            <input type="text" name="prenom" id="prenom" value="{{ salarie.prenom_salarie }}" required>
+            <label>Préom salarié:</label>
+        </div>
+        <div class="input-field">
+            <input type="date"  name="date_embauche" id="date_embauche" value="{{ salarie.date_embauche }}" required>
+            <label>Date embauche</label>
+        </div>
+        <div >
+            <label>Exploitation:</label>
+            <select id="id_exploitation" name="id_exploitation" required>
+                <option value="">Sélectionnez une exploitation</option>
+                {% for exploitation in exploitations %}
+                    <option value="{{ exploitation.id_exploitation }}"
+                    {% if exploitation.id_exploitation == salarie.id_exploitation %}selected{% endif %} >{{ exploitation.nom_exploitation }}</option>
+                {% endfor %}
+            </select>
+           
+        </div>
+        <button class="button"  type="submit">Mettre à jour</button>
+      
+    </form>
+    <a href="{{ url_for('salaries') }}">Annuler</a>
+{% endblock %}

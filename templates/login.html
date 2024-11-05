@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion</title>
+    <style>
+      
+    @import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@200;300;400;500;600;700&display=swap");
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Open Sans", sans-serif;
+    }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      width: 100%;
+      padding: 0 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    body::before {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: url("https://visitestonia.com/content-images/502598/a-complete-guide-to-camping-in-estonia-en-001-visit-estonia.jpg@1920w"), #000;
+      background-position: center;
+      background-size: cover;
+      opacity: 0.7;
+      z-index: -1; /* Met le fond derrière le contenu */
+    }
+    
+    /* Style du formulaire */
+    form {
+      display: flex;
+      flex-direction: column;
+      padding: 40px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.7); /* Fond semi-transparent */
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 400px;
+      color: #fff;
+      text-align: center;
+    }
+    
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+    
+    .input-field {
+      position: relative;
+      border-bottom: 2px solid #ccc;
+      margin: 15px 0;
+    }
+    
+    .input-field label {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      color: #ccc;
+      font-size: 16px;
+      pointer-events: none;
+      transition: 0.15s ease;
+    }
+    
+    .input-field input {
+      width: 100%;
+      height: 40px;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      color: #fff;
+    }
+    
+    .input-field input:focus~label,
+    .input-field input:valid~label {
+      font-size: 0.8rem;
+      top: 10px;
+      transform: translateY(-120%);
+    }
+    
+    button {
+      background: #fff;
+      color: #000;
+      font-weight: 600;
+      border: none;
+      padding: 12px 20px;
+      cursor: pointer;
+      border-radius: 3px;
+      font-size: 16px;
+      border: 2px solid transparent;
+      transition: 0.3s ease;
+      margin-top: 20px;
+    }
+    
+    button:hover {
+      color: black;
+      border-color: black;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    ul {
+      margin-top: 15px;
+      list-style: none;
+      color: red;
+      background-color: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 0.9rem;
+    }
+
+    </style>
+</head>
+<body>
+    <form action="#"  method="POST">
+        <h2>Connexion</h2>
+        <div class="input-field">
+            <input type="text" id="login" name="login" required>
+            <label>Nom d'utilisateur :</label>
+        </div>
+        
+        <div class="input-field">
+            <input type="password" id="password" name="password" required>
+            <label>Mot de passe:</label>
+        </div>
+        
+        <button class="button" type="submit">Se connecter</button>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <ul>
+            {% for message in messages %}
+              <li>{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+    </form>
+
+   
+</body>
+</html>
