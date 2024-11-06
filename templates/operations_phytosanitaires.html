@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Liste des operations phytosanitaires </h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flashes">
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% endwith %}
+    
+    <table id="operations_phytosanitairesTable" class="display">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Maladie visee</th>
+                <th>Stade maladie</th>
+                <th>Methodes traitement</th>
+                <th>Observations</th>
+                <th>Date traitement</th>
+                <th>Nom exploitation</th>
+                <th>Nom salarié</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+             
+            {% for operation in operations_phytosanitaires %}
+            <tr>
+                <td>{{ operation.id_operation_sanitaire }}</td>
+                <td>{{ operation.maladie_visee }}</td>
+                <td>{{ operation.stade_maladie }}</td>
+                <td>{{ operation.methodes_traitement }}</td>
+                <td>{{ operation.observations }}</td>
+                <td>{{ operation.date_traitement }}</td>
+                <td>{{ operation.nom_exploitation }}</td>
+                <td>{{ operation.nom_salarie }} {{ operation.prenom_salarie }}</td>
+                <td>
+                    
+                    <a href="{{ url_for('delete_operation_phytosanitaire', id=operation.id_operation_sanitaire) }}">
+                        
+    <i class="fa fa-trash" style="font-size:20px;color:red;"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Initialiser DataTables -->
+    <script>
+        $(document).ready(function() {
+            $('#operations_phytosanitairesTable').DataTable();
+        });
+    </script>
+{% endblock %}

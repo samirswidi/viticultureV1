@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Ajouter un travail agricole </h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flashes">
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+  
+  
+  
+  
+  
+  
+  
+    <form action="{{ url_for('edit_travail', id=travail.id_travail) }}" method="POST">
+       
+       
+        <div class="input-field">
+            <input type="text"  name="duree" value="{{ travail.duree }}" id="duree" required>
+            <label>Duree travail</label>
+        </div>
+        <div class="input-field">
+            <input type="date"  name="date_travail" value="{{ travail.date_travail }}" id="date_travail" required>
+            <label>Date travail</label>
+        </div>
+        <div class="custom-select" style="width:100%">
+            <label>Operation culturale :{{ travail.operation_culturale }}</label>
+            <select id="operation_culturale" name="operation_culturale" required>
+                
+                
+                <option value="Fertilisation" {% if travail.operation_culturale == "Fertilisation" %}selected{% endif %}>Fertilisation</option>
+                <option value="Pulvérisation" {% if travail.operation_culturale == "Pulvérisation" %}selected{% endif %}>Pulvérisation</option>
+                <option value="Labour" {% if travail.operation_culturale == "Labour" %}selected{% endif %}>Labour</option>
+            </select>
+           
+        </div>
+        <div class="custom-select" style="width:100%">
+            <label>Salarié:{{ travail.salarie_id }}</label>
+            <select id="salarie_id" name="salarie_id" required>
+                <option value="">Sélectionnez un salarié</option>
+                {% for salarie in salaries %}
+                    <option value="{{ salarie.id_salarie }}" 
+                    {% if salarie.id_salarie == travail.salarie_id %}selected{% endif %}
+                     >{{ salarie.nom_salarie }} {{ salarie.prenom_salarie }}</option>
+                {% endfor %}
+            </select>
+           
+        </div>
+        <div class="custom-select" style="width:100%">
+            <label>Exploitation:{{ travail.id_exploitation }}</label>
+            <select id="id_exploitation" name="id_exploitation" required>
+                <option value="">Sélectionnez une exploitation</option>
+                {% for exploitation in exploitations %}
+                    <option value="{{ exploitation.id_exploitation }}" 
+                    {% if exploitation.id_exploitation == travail.id_exploitation %}selected{% endif %}
+                     >{{ exploitation.nom_exploitation }}</option>
+                {% endfor %}
+            </select>
+           
+        </div>
+        <div class="custom-select" style="width:100%">
+            <label>Operation sanitaire:{{ travail.id_operation_sanitaire }}</label>
+            <select id="id_operation_sanitaire" name="id_operation_sanitaire" required>
+              
+                <option value="1" {% if travail.operation_culturale == '1' %}selected{% endif %}>1</option>
+                <option value="2" {% if travail.operation_culturale == '2' %}selected{% endif %}>2</option>
+                <option value="3" {% if travail.operation_culturale == '3' %}selected{% endif %}>3</option>
+                <option value="4" {% if travail.operation_culturale == '4' %}selected{% endif %}>4</option>
+              
+            </select>
+           
+        </div>
+        <div class="custom-select" style="width:100%">
+            <label>Travail à faire:{{ travail.type_travail }}</label>
+            <select id="type_travail" name="type_travail" required>
+                <option value="Plantation" {% if travail.operation_culturale == 'Plantation' %}selected{% endif %}>Plantation</option>
+                <option value="Entretien" {% if travail.operation_culturale == 'Entretien' %}selected{% endif %}>Entretien</option>
+                <option value="Récolte" {% if travail.operation_culturale == 'Récolte' %}selected{% endif %}>Récolte</option>
+                <option value="Irrigation" {% if travail.operation_culturale == 'Irrigation' %}selected{% endif %}>Irrigation</option>
+              
+            </select>
+           
+        </div>
+        <button class="button"  type="submit">Modifier</button>
+      
+    </form>
+{% endblock %}

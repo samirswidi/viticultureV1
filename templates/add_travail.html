@@ -26,6 +26,10 @@
             <input type="text"  name="duree" id="duree" required>
             <label>Duree travail</label>
         </div>
+        <div class="input-field">
+            <input type="date"  name="date_travail" id="date_travail" required>
+            <label>Date travail</label>
+        </div>
         <div class="custom-select" style="width:100%">
             <label>Operation culturale :</label>
             <select id="operation_culturale" name="operation_culturale" required>
@@ -41,8 +45,12 @@
         <div class="custom-select" style="width:100%">
             <label>Salarié:</label>
             <select id="salarie_id" name="salarie_id" required>
-                <option value="1">Samir</option>
-               
+                <option value="">Sélectionnez un salarié</option>
+                {% for salarie in salaries %}
+                    <option value="{{ salarie.id_salarie }}" 
+                    
+                     >{{ salarie.nom_salarie }} {{ salarie.prenom_salarie }}</option>
+                {% endfor %}
             </select>
            
         </div>
@@ -71,10 +79,10 @@
         <div class="custom-select" style="width:100%">
             <label>Travail à faire:</label>
             <select id="type_travail" name="type_travail" required>
-                <option value="">Plantation</option>
-                <option value="">Entretien</option>
-                <option value="">Récolte</option>
-                <option value="">Irrigation</option>
+                <option value="Plantation">Plantation</option>
+                <option value="Entretien">Entretien</option>
+                <option value="Récolte">Récolte</option>
+                <option value="Irrigation">Irrigation</option>
               
             </select>
            

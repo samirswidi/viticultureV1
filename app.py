@@ -320,6 +320,7 @@ def add_travail():
         return redirect(url_for('login'))
     conn = get_db_connection()
     exploitations = conn.execute('SELECT * FROM exploitations').fetchall()  # Récupérer toutes les exploitations
+    salaries=conn.execute('SELECT * FROM salaries').fetchall()  # Récupérer toutes les salaries
     conn.close()    
     if request.method == 'POST':
         type_travail=request.form['type_travail']
@@ -333,8 +334,11 @@ def add_travail():
         conn = get_db_connection()
         
         # Vérification si le salarié existe déjà
-        verif = conn.execute('SELECT * FROM travaux_agricoles WHERE type_travail = ?', (type_travail, )).fetchone()
-        
+        verif = conn.execute(f'''SELECT * FROM travaux_agricoles
+                              WHERE type_travail = ? and date_travail=? and id_exploitation=?
+                                and salarie_id=? and operation_culturale=? and duree=? and id_operation_sanitaire=?
+                             ''', (type_travail,date_travail,id_exploitation,salarie_id,operation_culturale,duree,id_operation_sanitaire, )).fetchone()
+        print('ok')
         if verif:
             flash('Travail déjà existe.', 'error')
             conn.close()  # Fermer la connexion après la vérification
@@ -351,7 +355,7 @@ def add_travail():
             
             return redirect(url_for('add_travail'))  # Redirection vers la même page après l'insertion
     
-    return render_template('add_travail.html', exploitations=exploitations)
+    return render_template('add_travail.html', exploitations=exploitations,salaries=salaries)
 
     
 
@@ -367,6 +371,7 @@ def edit_travail(id):
     # Récupérer le salarié et les exploitations en utilisant une seule connexion
     travail = conn.execute('SELECT * FROM travaux_agricoles WHERE id_travail = ?', (id,)).fetchone()
     exploitations = conn.execute('SELECT * FROM exploitations').fetchall()  # Récupérer toutes les exploitations
+    salaries = conn.execute('SELECT * FROM salaries').fetchall()  # Récupérer toutes les salaries
     
     if request.method == 'POST':
         type_travail=request.form['type_travail']
@@ -379,21 +384,23 @@ def edit_travail(id):
         
         
         # Mettre à jour les informations du salarié
-        conn.execute(f'''UPDATE travaux_agricoles SET type_travail = ?, date_travail = ?, id_exploitation = ?,
-             salarie_id = ?, operation_culturale=?,duree=?,id_operation_sanitaire=?  WHERE id_travail = ?',
-            ({type_travail}, {date_travail}, {id_exploitation}, {salarie_id},{operation_culturale},{duree},{id_operation_sanitaire}, {id})''')
-        
+        conn.execute('''UPDATE travaux_agricoles 
+                SET type_travail = ?, date_travail = ?, id_exploitation = ?, salarie_id = ?, 
+                    operation_culturale = ?, duree = ?, id_operation_sanitaire = ? 
+                WHERE id_travail = ?''', 
+             (type_travail, date_travail, id_exploitation, salarie_id, operation_culturale, duree, id_operation_sanitaire, id))
+
         conn.commit()  # Confirmer les changements
         
         # Fermer la connexion après toutes les opérations
         conn.close()
-        
+        flash('travail modifié avec succès.')
         return redirect(url_for('travaux'))
 
     # Fermer la connexion après toutes les opérations de récupération si pas de mise à jour
     conn.close()
-    flash('travail modifié avec succès.')
-    return render_template('edit_travail.html', travail=travail, exploitations=exploitations)
+    
+    return render_template('edit_travail.html', travail=travail, exploitations=exploitations,salaries=salaries)
 # Route pour supprimer un travail
 
 @app.route('/travaux/delete/<int:id>', methods=('GET', 'POST') )
@@ -407,6 +414,36 @@ def delete_travail(id):
     conn.close()
     flash('Travail supprimé avec succès.')
     return redirect(url_for('travaux'))
+
+# operations phytosanitaires.
+@app.route('/operations_phytosanitaires')
+def operations_phytosanitaires():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    conn = get_db_connection()
+    operations_phytosanitaires = conn.execute(f'''
+                    SELECT * FROM operations_phytosanitaires  
+                    join exploitations on exploitations.id_exploitation=operations_phytosanitaires.id_exploitation
+                    join salaries on salaries.id_salarie=operations_phytosanitaires.id_salarie
+                    ''').fetchall()
+    conn.close()
+    
+    return render_template('operations_phytosanitaires.html', operations_phytosanitaires=operations_phytosanitaires)
+
+# Route pour supprimer un operation phytosanitaire
+
+@app.route('/operations_phytosanitaires/delete/<int:id>', methods=('GET', 'POST') )
+def delete_operation_phytosanitaire(id):
+    print('ok')
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    conn = get_db_connection()
+    conn.execute('DELETE FROM operations_phytosanitaires WHERE id_operation_sanitaire = ?', (id,))
+    conn.commit()
+    conn.close()
+    flash('operation phytosanitaire supprimé avec succès.')
+    return redirect(url_for('operations_phytosanitaires'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

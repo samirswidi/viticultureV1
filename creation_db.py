@@ -80,7 +80,7 @@ def create_tables():
     login TEXT NOT NULL,
     password TEXT NOT NULL
                 ) ''')
-    c.execute(f''' INSERT INTO authentification (login, password) VALUES ('admin', '21232f297a57a5a743894a0e4a801fc3')''')
+    #c.execute(f''' INSERT INTO authentification (login, password) VALUES ('admin', '21232f297a57a5a743894a0e4a801fc3')''')
 
 
 
