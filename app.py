@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for,session, flash
 import sqlite3
 import hashlib
+import smtplib
+from email.mime.text import MIMEText
 app = Flask(__name__)
 app.secret_key = 'samirswidisecretkey'
 # Nom de la base de données
@@ -12,6 +14,39 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row  # Retourne les résultats sous forme de dictionnaire
     return conn
 # Page d'accueil (redirection vers login si non connecté)
+def send_email(chef_nom):
+    msg = MIMEText(f"La saisie mensuelle des travaux a été effectuée par {chef_nom}.")
+    msg['Subject'] = 'Saisie Mensuelle Effectuée'
+    msg['From'] = 'no-reply@exploitation.com'
+    msg['To'] = "samirswidi@gmail.com"
+
+    try:
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()
+            server.login('samirswidi@gmail.com', 'dmxm dxoo evut fptv')  # Remplacez par votre mot de passe d'application
+            server.sendmail('no-reply@exploitation.com', 'samirswidi@gmail.com', msg.as_string())
+    except Exception as e:
+        flash(f"Erreur lors de l'envoi de l'email : {e}", "error")
+@app.route('/envoiemail/<string:nom>', methods=['POST'])  
+def envoimail(nom):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    # Envoyer l'email
+    try:
+        send_email(nom)
+        flash("Email envoyé avec succès.", "success")
+        conn = get_db_connection()
+        travaux = conn.execute('SELECT * FROM travaux_agricoles  join exploitations on exploitations.id_exploitation=travaux_agricoles.id_exploitation join salaries on salaries.id_salarie=travaux_agricoles.salarie_id ').fetchall()
+        conn.close()
+        return redirect(url_for('travaux'))
+        
+    except Exception as e:
+        flash(f"Erreur lors de l'envoi de l'email : {e}", "error")
+
+    
+    
+    return render_template('travaux_agricoles.html',travaux=travaux)
 @app.route('/')
 def index():
     if 'user_id' not in session:
@@ -443,6 +478,93 @@ def delete_operation_phytosanitaire(id):
     conn.close()
     flash('operation phytosanitaire supprimé avec succès.')
     return redirect(url_for('operations_phytosanitaires'))
+# Route pour ajouter un travail
+@app.route('/operations_phytosanitaires/add_operation', methods=('GET', 'POST'))
+def add_operation():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    conn = get_db_connection()
+    exploitations = conn.execute('SELECT * FROM exploitations').fetchall()  # Récupérer toutes les exploitations
+    salaries=conn.execute('SELECT * FROM salaries').fetchall()  # Récupérer toutes les salaries
+    conn.close()    
+    if request.method == 'POST':
+       
+        maladie_visee=request.form['maladie_visee']
+        stade_maladie=request.form['stade_maladie']
+        methodes_traitement=request.form['methodes_traitement']
+        observations=request.form['observations']
+        date_traitement=request.form['date_traitement']
+        id_exploitation=request.form['id_exploitation']
+        id_salarie=request.form['id_salarie']
+        # Ouverture de la connexion
+        conn = get_db_connection()
+        
+        # Vérification si le salarié existe déjà
+        verif = conn.execute(f'''SELECT * FROM operations_phytosanitaires
+                              WHERE maladie_visee = ? and stade_maladie=? and methodes_traitement=?
+                                and observations=? and date_traitement=? and id_exploitation=? and id_salarie=?
+                             ''', (maladie_visee,stade_maladie,methodes_traitement,observations,date_traitement,id_exploitation,id_salarie, )).fetchone()
+        print('ok')
+        if verif:
+            flash('opération phytosanitaire déjà existe.', 'error')
+            conn.close()  # Fermer la connexion après la vérification
+            return render_template('add_operation.html', exploitations=exploitations)
+        else:
+            # Insertion du salarié dans la base de données
+            conn.execute(
+                'INSERT INTO operations_phytosanitaires (maladie_visee, stade_maladie, methodes_traitement, observations,date_traitement,id_exploitation,id_salarie) VALUES (?, ?, ?, ?,?,?,?)',
+                (maladie_visee, stade_maladie, methodes_traitement, observations,date_traitement,id_exploitation,id_salarie)
+            )
+            conn.commit()  # Enregistrer les modifications dans la base de données
+            flash('Opération sanitaire ajouté avec succès.', 'success')
+            conn.close()  # Fermer la connexion après l'insertion
+            
+            return redirect(url_for('add_operation'))  # Redirection vers la même page après l'insertion
+    
+    return render_template('add_operation.html', exploitations=exploitations,salaries=salaries)
+
+ # route pour modifier operations_phytosanitaires
+@app.route('/operations_phytosanitaires/edit/<int:id>', methods=('GET', 'POST'))
+def edit_operation(id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db_connection()
+    
+    # Récupérer le salarié et les exploitations en utilisant une seule connexion
+   
+    operation = conn.execute('SELECT * FROM operations_phytosanitaires WHERE id_operation_sanitaire = ?', (id,)).fetchone()
+    exploitations = conn.execute('SELECT * FROM exploitations').fetchall()  # Récupérer toutes les exploitations
+    salaries = conn.execute('SELECT * FROM salaries').fetchall()  # Récupérer toutes les salaries
+    
+    if request.method == 'POST':
+        maladie_visee=request.form['maladie_visee']
+        stade_maladie=request.form['stade_maladie']
+        methodes_traitement=request.form['methodes_traitement']
+        observations=request.form['observations']
+        date_traitement=request.form['date_traitement']
+        id_exploitation=request.form['id_exploitation']
+        id_salarie=request.form['id_salarie']
+        
+        
+        # Mettre à jour les informations du salarié
+        conn.execute('''UPDATE operations_phytosanitaires 
+                SET maladie_visee = ?, stade_maladie = ?, methodes_traitement = ?, observations = ?, 
+                    date_traitement = ?, id_exploitation = ?, id_salarie = ? 
+                WHERE id_operation_sanitaire = ?''', 
+             (maladie_visee, stade_maladie, methodes_traitement, observations, date_traitement, id_exploitation, id_salarie, id))
+
+        conn.commit()  # Confirmer les changements
+        
+        # Fermer la connexion après toutes les opérations
+        conn.close()
+        flash('opération modifié avec succès.')
+        return redirect(url_for('operations_phytosanitaires'))
+
+    # Fermer la connexion après toutes les opérations de récupération si pas de mise à jour
+    conn.close()
+    
+    return render_template('edit_operation.html', operation=operation, exploitations=exploitations,salaries=salaries)   
 
 
 if __name__ == '__main__':

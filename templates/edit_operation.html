@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Ajouter une opération phytosanitaires </h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flashes">
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+  
+  
+  
+  
+  
+  
+  
+    <form action="{{ url_for('edit_operation', id=operation.id_operation_sanitaire) }}" method="POST">
+        <div class="input-field">
+            <label>Date traitement</label><br>
+            <input type="date"  name="date_traitement"  value="{{ operation.date_traitement }}" id="date_traitement" required>
+            
+        </div>   
+        <div class="custom-select" style="width:100%">
+            <label>Maladie visée:</label>
+            <select id="maladie_visee" name="maladie_visee" required>
+                <option value="Mildiou"  {% if operation.maladie_visee == 'Mildiou' %}selected{% endif %}>
+                    Mildiou</option>
+                <option value="Oïdium"  {% if operation.maladie_visee == 'Oïdium' %}selected{% endif %}>
+                    Oïdium</option>
+                <option value="Botrytis"  {% if operation.maladie_visee == 'Botrytis' %}selected{% endif %}>
+                    Botrytis</option>
+                <option value="Anthracnose"  {% if operation.maladie_visee == 'Anthracnose' %}selected{% endif %}>
+                    Anthracnose</option>
+              
+            </select>
+           
+        </div>  
+        <div class="custom-select" style="width:100%">
+            <label>Stade maladie:</label>
+            <select id="stade_maladie" name="stade_maladie" required>
+                <option value="Début" {% if operation.stade_maladie == 'Début' %}selected{% endif %}>
+                    Début</option>
+                <option value="Moyen" {% if operation.stade_maladie == 'Moyen' %}selected{% endif %}>Moyen</option>
+                <option value="Avancé" {% if operation.stade_maladie == 'Avancé' %}selected{% endif %}>Avancé</option>
+                
+            </select>
+           
+        </div>  
+
+        <div class="custom-select" style="width:100%">
+            <label>Méthode traitement:</label>
+            <select id="methodes_traitement" name="methodes_traitement" required>
+                <option value="Pulvérisation" {% if operation.methodes_traitement == 'Pulvérisation' %}selected{% endif %}>
+                    Pulvérisation</option>
+                <option value="Traitement biologique" {% if operation.methodes_traitement == 'Traitement biologique' %}selected{% endif %}>
+                    Traitement biologique</option>
+                <option value="Fongicide" {% if operation.methodes_traitement == 'Fongicide' %}selected{% endif %}>
+                    Fongicide</option>
+                
+            </select>
+           
+        </div> 
+        <div class="custom-select" style="width:100%">
+            <label>observations:</label>
+            <select id="observations" name="observations" required>
+                <option value="Traitement effectué avec succès" {% if operation.observation == 'Traitement effectué avec succès' %}selected{% endif %}>
+                    Traitement effectué avec succès</option>
+                <option value="Besoin de suivi" {% if operation.observation == 'Besoin de suivi' %}selected{% endif %}>
+                    Besoin de suivi</option>
+                <option value="Réinfection possible" {% if operation.observation == 'Réinfection possible' %}selected{% endif %}>
+                    Réinfection possible</option>
+                
+            </select>
+           
+        </div> 
+
+<div class="custom-select" style="width:100%">
+<label>Salarié:</label>
+<select id="id_salarie" name="id_salarie" required>
+    <option value="">Sélectionnez un salarié</option>
+    {% for salarie in salaries %}
+        <option value="{{ salarie.id_salarie }}" 
+        {% if salarie.id_salarie == operation.salarie_id %}selected{% endif %}
+         >{{ salarie.nom_salarie }} {{ salarie.prenom_salarie }}</option>
+    {% endfor %}
+</select>
+
+</div>
+<div class="custom-select" style="width:100%">
+    <label>Exploitation:</label>
+    <select id="id_exploitation" name="id_exploitation" required>
+        <option value="">Sélectionnez une exploitation</option>
+        {% for exploitation in exploitations %}
+            <option value="{{ exploitation.id_exploitation }}" 
+            {% if exploitation.id_exploitation == operation.id_exploitation %}selected{% endif %}
+             >{{ exploitation.nom_exploitation }}</option>
+        {% endfor %}
+    </select>
+
+</div>           
+                    
+        
+        <button class="button"  type="submit">Modifier</button>
+      
+    </form>
+{% endblock %}
