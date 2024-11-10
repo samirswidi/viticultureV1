@@ -43,7 +43,7 @@ for _ in range(100):
     
     # Logique pour déterminer l'état
     if stade_maladie in ['Moyen', 'Avancé'] or observations_text in ['Traitement effectué avec succès', 'Besoin de suivi'] or methodes_traitement in ['Fongicide', 'Insecticide', 'Herbicide', 'Décoller', 'Traitement thermique']:
-        # 95% de chances que l'état soit 'Morte'
+        # 80% de chances que l'état soit 'Morte'
         etat_text = 'Morte' if random() < 0.80 else 'Vivante'
     else:
         # Si les conditions ne sont pas remplies, l'état est aléatoire
