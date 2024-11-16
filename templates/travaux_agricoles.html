@@ -14,7 +14,9 @@
     <form action="{{ url_for('envoimail', nom=session.get('admin')) }}" method="POST">
         <button class="button" type="submit">Envoyer email</button>
     </form>
-
+    <form action="{{ url_for('clustering_graph') }}" method="POST">
+        <button class="button" type="submit">k means</button>
+    </form>
     <table id="travauxTable" class="display">
         <thead>
             <tr>

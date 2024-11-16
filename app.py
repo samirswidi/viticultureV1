@@ -7,7 +7,14 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import classification_report, confusion_matrix,silhouette_score, pairwise_distances
+
+from kmodes.kmodes import KModes
+
+import matplotlib.pyplot as plt
+import io
+import base64
+
 app = Flask(__name__)
 app.secret_key = 'samirswidisecretkey'
 # Nom de la base de données
@@ -689,7 +696,62 @@ def edit_operation(id):
     conn.close()
     
     return render_template('edit_operation.html', operation=operation, exploitations=exploitations,salaries=salaries)   
+@app.route('/k-means', methods=['GET', 'POST'])
+def clustering_graph():
+    # Connexion à la base de données SQLite
+    conn = get_db_connection()
 
+    # Charger les données avec uniquement les colonnes nécessaires
+    query = "SELECT type_travail, salarie_id FROM travaux_agricoles"
+    df = pd.read_sql(query, conn)
+    conn.close()
+
+    # Créer une copie des données pour le clustering
+    X = df[['type_travail']]
+
+    # Appliquer K-modes avec un nombre de clusters (par exemple, 4 clusters)
+    kmodes = KModes(n_clusters=4, init='Cao', n_init=5, verbose=0, random_state=42)
+    df['cluster'] = kmodes.fit_predict(X)
+
+    # Calculer la matrice de dissimilarité et le score de silhouette
+    label_encoder = LabelEncoder()
+    X_encoded = label_encoder.fit_transform(df['type_travail']).reshape(-1, 1)
+    dissimilarity_matrix = pairwise_distances(X_encoded, metric='hamming')
+    silhouette_avg = silhouette_score(dissimilarity_matrix, df['cluster'], metric='precomputed')
+
+    # Regrouper les salariés par cluster
+    clusters_salaries = df.groupby('cluster')['salarie_id'].apply(list)
+
+    # Générer un graphique pour les clusters
+    fig, ax = plt.subplots(figsize=(8, 6))
+    cluster_counts = df['cluster'].value_counts()
+    cluster_counts.plot(kind='bar', color='skyblue', ax=ax)
+    ax.set_title("Répartition des clusters")
+    ax.set_xlabel("Clusters")
+    ax.set_ylabel("Nombre d'éléments")
+    ax.text(0.5, max(cluster_counts) - 1, f"Score silhouette: {silhouette_avg:.2f}", fontsize=12, color="red")
+
+    # Convertir le graphique en image encodée
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    graph_url = base64.b64encode(img.getvalue()).decode()
+    img.close()
+
+    return render_template('kmeans.html', graph_url=graph_url, clusters_salaries=clusters_salaries)
+@app.route('/synthese')
+def synthese():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    conn = get_db_connection()
+    exploitations = conn.execute('SELECT * FROM exploitations').fetchall()
+    conn.close()
+    data = {
+        'months': ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+        'sales': [10, 15, 25, 40, 60, 80]
+    }
+    return render_template('synthese.html', exploitations=exploitations,data=data)
+# Route pour ajouter un salarié
 
 if __name__ == '__main__':
     app.run(debug=True)

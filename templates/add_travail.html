@@ -30,9 +30,9 @@
             <input type="date"  name="date_travail" id="date_travail" required>
             <label>Date travail</label>
         </div>
-        <div class="custom-select" style="width:100%">
+        <div  style="width:100%">
             <label>Operation culturale :</label>
-            <select id="operation_culturale" name="operation_culturale" required>
+            <select id="operation_culturale" name="operation_culturale"  class="form-control"  required>
                 
                 
                 <option value="Fertilisation">Fertilisation</option>
@@ -42,9 +42,9 @@
             </select>
            
         </div>
-        <div class="custom-select" style="width:100%">
+        <div  style="width:100%">
             <label>Salarié:</label>
-            <select id="salarie_id" name="salarie_id" required>
+            <select id="salarie_id" name="salarie_id"  class="form-control"  required>
                 <option value="">Sélectionnez un salarié</option>
                 {% for salarie in salaries %}
                     <option value="{{ salarie.id_salarie }}" 
@@ -54,9 +54,9 @@
             </select>
            
         </div>
-        <div class="custom-select" style="width:100%">
+        <div  style="width:100%">
             <label>Exploitation:</label>
-            <select id="id_exploitation" name="id_exploitation" required>
+            <select id="id_exploitation" name="id_exploitation"  class="form-control"  required>
                 <option value="">Sélectionnez une exploitation</option>
                 {% for exploitation in exploitations %}
                     <option value="{{ exploitation.id_exploitation }}"
@@ -65,9 +65,9 @@
             </select>
            
         </div>
-        <div class="custom-select" style="width:100%">
+        <div  style="width:100%">
             <label>Operation sanitaire:</label>
-            <select id="id_operation_sanitaire" name="id_operation_sanitaire" required>
+            <select id="id_operation_sanitaire" name="id_operation_sanitaire"  class="form-control"  required>
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -76,9 +76,9 @@
             </select>
            
         </div>
-        <div class="custom-select" style="width:100%">
+        <div  style="width:100%">
             <label>Travail à faire:</label>
-            <select id="type_travail" name="type_travail" required>
+            <select id="type_travail" name="type_travail"   class="form-control"  required>
                 <option value="Plantation">Plantation</option>
                 <option value="Entretien">Entretien</option>
                 <option value="Récolte">Récolte</option>
@@ -87,7 +87,7 @@
             </select>
            
         </div>
-        <button class="button"  type="submit">Ajouter</button>
+        <button type="submit" class="button"> Ajouter</button>
       
     </form>
 {% endblock %}

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exemple ECharts</title>
+  
+  <!-- CDN pour ECharts -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.3.3/dist/echarts.min.js"></script>
+  
+  <!-- CDN pour jsPDF (PDF Export) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  
+  <!-- CDN pour PapaParse (CSV Export) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+  <!-- Style pour la taille du graphique -->
+  <style>
+    #chart {
+      width: 600px;
+      height: 400px;
+    }
+    #export-buttons {
+      margin-top: 20px;
+    }
+    .export-btn {
+      padding: 10px;
+      margin-right: 10px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Conteneur pour le graphique -->
+  <div id="chart"></div>
+
+  <!-- Export Buttons -->
+  <div id="export-buttons">
+    <button class="export-btn" id="export-png">Export PNG</button>
+    <button class="export-btn" id="export-csv">Export CSV</button>
+    <button class="export-btn" id="export-pdf">Export PDF</button>
+  </div>
+
+  <script>
+    // Initialisation du graphique
+    var chart = echarts.init(document.getElementById('chart'));
+
+    // Définition des options du graphique
+    var option = {
+      title: {
+        text: 'Exemple de graphique avec ECharts'
+      },
+      tooltip: {},
+      xAxis: {
+        data: ['IRRugation', 'plantation', 'Entretion']
+      },
+      yAxis: {},
+      series: [{
+        name: 'Ventes',
+        type: 'bar',
+        data: [20, 32, 45]
+      }]
+    };
+
+    // Appliquer les options au graphique
+    chart.setOption(option);
+
+    // Export PNG
+    document.getElementById('export-png').addEventListener('click', function () {
+      var imgData = chart.getDataURL({
+        type: 'png',
+        pixelRatio: 2, // for better resolution
+        backgroundColor: '#fff' // set background to white
+      });
+      var link = document.createElement('a');
+      link.href = imgData;
+      link.download = 'chart.png';
+      link.click();
+    });
+
+    // Export CSV
+    document.getElementById('export-csv').addEventListener('click', function () {
+      var data = option.series[0].data; // Get data from chart
+      var csv = Papa.unparse({
+        fields: ['Category', 'Sales'],
+        data: data.map(function (value, index) {
+          return [option.xAxis.data[index], value];
+        })
+      });
+      
+      var blob = new Blob([csv], { type: 'text/csv' });
+      var link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'chart-data.csv';
+      link.click();
+    });
+
+    // Export PDF
+    document.getElementById('export-pdf').addEventListener('click', function () {
+      const { jsPDF } = window.jspdf;
+      var doc = new jsPDF();
+
+      // Add chart image to PDF
+      var imgData = chart.getDataURL({
+        type: 'png',
+        pixelRatio: 2,
+        backgroundColor: '#fff'
+      });
+
+      doc.addImage(imgData, 'PNG', 10, 10, 180, 100); // Adjust size as needed
+      doc.save('chart.pdf');
+    });
+  </script>
+
+</body>
+</html>

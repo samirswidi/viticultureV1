@@ -24,7 +24,7 @@
         </div>
         <div >
             <label>Exploitation:</label>
-            <select id="id_exploitation" name="id_exploitation" required>
+            <select id="id_exploitation" name="id_exploitation"  class="form-control"  required>
                 <option value="">Sélectionnez une exploitation</option>
                 {% for exploitation in exploitations %}
                     <option value="{{ exploitation.id_exploitation }}"
