@@ -757,24 +757,56 @@ def synthese():
         # Exécuter la requête SQL en fonction de la catégorie et de l'année
         conn = get_db_connection()
         if categorie == "sanitaire":
+            # Requête SQL pour récupérer les données avec l'année et le type de maladie
             operation = conn.execute(
-                'SELECT * FROM operations_phytosanitaires WHERE YEAR(date_traitement) = ?',
+                'SELECT maladie_visee, stade_maladie, methodes_traitement, observations, id_exploitation,date_traitement, '
+                'strftime("%Y", date_traitement) as year, strftime("%m", date_traitement) as month '
+                'FROM operations_phytosanitaires WHERE strftime("%Y", date_traitement) = ?',
                 (annee,)
             ).fetchall()
         else:
             # Ajoutez des conditions pour les autres catégories si nécessaire
             operation = conn.execute(
-                'SELECT * FROM operations_phytosanitaires WHERE YEAR(date_traitement) = ?',
+                'SELECT maladie_visee, stade_maladie, methodes_traitement, observations, id_exploitation,date_traitement, '
+                'strftime("%Y", date_traitement) as year, strftime("%m", date_traitement) as month '
+                'FROM operations_phytosanitaires WHERE strftime("%Y", date_traitement) = ?',
                 (annee,)
             ).fetchall()
         conn.close()
 
-    # Exemple de données pour un graphique
+    # Organiser les données pour le graphique et la table
+    maladie_count = {}
+    months_set = set()  # Utilisez un set pour stocker les mois uniques
+
+    for row in operation:
+        month = int(row['month'])  # Extraire le mois de la requête
+        maladie = row['maladie_visee']
+        
+        # Ajouter le mois au set
+        months_set.add(month)
+        
+        if maladie not in maladie_count:
+            maladie_count[maladie] = [0] * 12  # Initialiser les comptes pour tous les mois
+
+        maladie_count[maladie][month - 1] += 1  # Utilisation de -1 pour indexer correctement
+
+    # Tri des mois extraits et conversion en noms de mois
+    months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc']
+    months = [months[month - 1] for month in sorted(months_set)]  # Convertir les mois extraits en noms et trier
+
+    # Préparer les données pour le graphique
     data = {
-        'months': ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
-        'sales': [10, 15, 25, 40, 60, 80]
+        'months': months,  # Utiliser les mois extraits
+        'sales': []
     }
-    
+
+    # Remplir les données des ventes pour chaque maladie
+    for maladie, counts in maladie_count.items():
+        data['sales'].append({
+            'maladie': maladie,
+            'counts': counts
+        })
+
     return render_template(
         'synthese.html',
         operation=operation,
