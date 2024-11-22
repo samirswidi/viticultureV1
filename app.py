@@ -739,13 +739,6 @@ def clustering_graph():
     img.close()
 
     return render_template('kmeans.html', graph_url=graph_url, clusters_salaries=clusters_salaries)
-from flask import request, session, redirect, url_for, render_template
-import sqlite3
-
-def get_db_connection():
-    conn = sqlite3.connect('database.db')
-    conn.row_factory = sqlite3.Row
-    return conn
 
 @app.route('/synthese', methods=['GET', 'POST'])
 def synthese():
