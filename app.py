@@ -739,19 +739,56 @@ def clustering_graph():
     img.close()
 
     return render_template('kmeans.html', graph_url=graph_url, clusters_salaries=clusters_salaries)
-@app.route('/synthese')
+from flask import request, session, redirect, url_for, render_template
+import sqlite3
+
+def get_db_connection():
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
+@app.route('/synthese', methods=['GET', 'POST'])
 def synthese():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    conn = get_db_connection()
-    exploitations = conn.execute('SELECT * FROM exploitations').fetchall()
-    conn.close()
+
+    operation = []
+    annee = None
+    categorie = None
+
+    # Si la méthode est POST, récupérez les valeurs du formulaire
+    if request.method == 'POST':
+        annee = request.form.get('annee')
+        categorie = request.form.get('categorie')
+
+        # Exécuter la requête SQL en fonction de la catégorie et de l'année
+        conn = get_db_connection()
+        if categorie == "sanitaire":
+            operation = conn.execute(
+                'SELECT * FROM operations_phytosanitaires WHERE YEAR(date_traitement) = ?',
+                (annee,)
+            ).fetchall()
+        else:
+            # Ajoutez des conditions pour les autres catégories si nécessaire
+            operation = conn.execute(
+                'SELECT * FROM operations_phytosanitaires WHERE YEAR(date_traitement) = ?',
+                (annee,)
+            ).fetchall()
+        conn.close()
+
+    # Exemple de données pour un graphique
     data = {
         'months': ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
         'sales': [10, 15, 25, 40, 60, 80]
     }
-    return render_template('synthese.html', exploitations=exploitations,data=data)
-# Route pour ajouter un salarié
+    
+    return render_template(
+        'synthese.html',
+        operation=operation,
+        data=data,
+        annee=annee,
+        categorie=categorie
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)
