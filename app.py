@@ -1,3 +1,5 @@
+import locale
+
 from flask import Flask, render_template, request, redirect, url_for,session, flash
 import sqlite3
 import hashlib
@@ -754,8 +756,12 @@ def synthese():
         annee = request.form.get('annee')
         categorie = request.form.get('categorie')
 
+        locale.setlocale(locale.LC_TIME, 'French_France.1252')
+        print(locale.locale_alias)
+
         # Exécuter la requête SQL en fonction de la catégorie et de l'année
         conn = get_db_connection()
+        data = {}
         if categorie == "sanitaire":
             # Requête SQL pour récupérer les données avec l'année et le type de maladie
             operation = conn.execute(
@@ -764,48 +770,83 @@ def synthese():
                 'FROM operations_phytosanitaires WHERE strftime("%Y", date_traitement) = ?',
                 (annee,)
             ).fetchall()
-        else:
-            # Ajoutez des conditions pour les autres catégories si nécessaire
+
+            maladie_count = {}
+            months_set = set()  # Utilisez un set pour stocker les mois uniques
+
+            for row in operation:
+                month = int(row['month'])  # Extraire le mois de la requête
+                maladie = row['maladie_visee']
+
+                # Ajouter le mois au set
+                months_set.add(month)
+
+                if maladie not in maladie_count:
+                    maladie_count[maladie] = [0] * 12  # Initialiser les comptes pour tous les mois
+
+                maladie_count[maladie][month - 1] += 1  # Utilisation de -1 pour indexer correctement
+
+            # Tri des mois extraits et conversion en noms de mois
+            months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc']
+            months = [months[month - 1] for month in sorted(months_set)]  # Convertir les mois extraits en noms et trier
+
+            # Préparer les données pour le graphique
+            data = {
+                'months': months,  # Utiliser les mois extraits
+                'sales': []
+            }
+
+            # Remplir les données des ventes pour chaque maladie
+            for maladie, counts in maladie_count.items():
+                data['sales'].append({
+                    'maladie': maladie,
+                    'counts': counts
+                })
+
+        elif categorie == "travaux":
             operation = conn.execute(
-                'SELECT maladie_visee, stade_maladie, methodes_traitement, observations, id_exploitation,date_traitement, '
-                'strftime("%Y", date_traitement) as year, strftime("%m", date_traitement) as month '
-                'FROM operations_phytosanitaires WHERE strftime("%Y", date_traitement) = ?',
+                'SELECT type_travail, operation_culturale, id_exploitation, salarie_id, strftime("%H:%M:%S", Duree) as duree, id_operation_sanitaire, '
+                'strftime("%d/%m/%Y", date_travail) as date, strftime("%m", date_travail) as month '
+                'FROM travaux_agricoles WHERE strftime("%Y", date_travail) = ?',
                 (annee,)
             ).fetchall()
+
+            operation_data = [dict(row) for row in operation]
+
+            # Log the formatted result
+            app.logger.info(f"Query Results: {operation_data}")
+
+        elif categorie == "salaries":
+            operation = conn.execute(
+                'SELECT identifiant_sal, nom_salarie, prenom_salarie, '
+                'strftime("%d/%m/%Y", date_embauche) as date_embauche, id_exploitation, strftime("%m", date_embauche) as month '
+                'FROM salaries WHERE strftime("%Y", date_embauche) = ?',
+                (annee,)
+            ).fetchall()
+
+            operation_data = [dict(row) for row in operation]
+
+            # Log the formatted result
+            app.logger.info(f"Query Results salaries: {operation_data}")
+
+
+        elif categorie == "chefs":
+            operation = conn.execute(
+                'SELECT username_chef, nom_chef, prenom_chef, '
+                ' id_exploitation FROM chefs_exploitation',
+            ).fetchall()
+
+            operation_data = [dict(row) for row in operation]
+
+            # Log the formatted result
+            app.logger.info(f"Query Results salaries: {operation_data}")
+
+
+
+
         conn.close()
 
-    # Organiser les données pour le graphique et la table
-    maladie_count = {}
-    months_set = set()  # Utilisez un set pour stocker les mois uniques
 
-    for row in operation:
-        month = int(row['month'])  # Extraire le mois de la requête
-        maladie = row['maladie_visee']
-        
-        # Ajouter le mois au set
-        months_set.add(month)
-        
-        if maladie not in maladie_count:
-            maladie_count[maladie] = [0] * 12  # Initialiser les comptes pour tous les mois
-
-        maladie_count[maladie][month - 1] += 1  # Utilisation de -1 pour indexer correctement
-
-    # Tri des mois extraits et conversion en noms de mois
-    months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc']
-    months = [months[month - 1] for month in sorted(months_set)]  # Convertir les mois extraits en noms et trier
-
-    # Préparer les données pour le graphique
-    data = {
-        'months': months,  # Utiliser les mois extraits
-        'sales': []
-    }
-
-    # Remplir les données des ventes pour chaque maladie
-    for maladie, counts in maladie_count.items():
-        data['sales'].append({
-            'maladie': maladie,
-            'counts': counts
-        })
 
     return render_template(
         'synthese.html',
