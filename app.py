@@ -748,108 +748,76 @@ def synthese():
         return redirect(url_for('login'))
 
     operation = []
+    data = {}
     annee = None
     categorie = None
+    template_name = 'synthese.html'  # Default template
 
-    # Si la méthode est POST, récupérez les valeurs du formulaire
     if request.method == 'POST':
         annee = request.form.get('annee')
         categorie = request.form.get('categorie')
 
-        locale.setlocale(locale.LC_TIME, 'French_France.1252')
-        print(locale.locale_alias)
-
-        # Exécuter la requête SQL en fonction de la catégorie et de l'année
         conn = get_db_connection()
-        data = {}
         if categorie == "sanitaire":
-            # Requête SQL pour récupérer les données avec l'année et le type de maladie
             operation = conn.execute(
-                'SELECT maladie_visee, stade_maladie, methodes_traitement, observations, id_exploitation,date_traitement, '
+                'SELECT maladie_visee, stade_maladie, methodes_traitement, observations, id_exploitation, date_traitement, '
                 'strftime("%Y", date_traitement) as year, strftime("%m", date_traitement) as month '
                 'FROM operations_phytosanitaires WHERE strftime("%Y", date_traitement) = ?',
                 (annee,)
             ).fetchall()
 
             maladie_count = {}
-            months_set = set()  # Utilisez un set pour stocker les mois uniques
+            months_set = set()
 
             for row in operation:
-                month = int(row['month'])  # Extraire le mois de la requête
+                month = int(row['month'])
                 maladie = row['maladie_visee']
-
-                # Ajouter le mois au set
                 months_set.add(month)
 
                 if maladie not in maladie_count:
-                    maladie_count[maladie] = [0] * 12  # Initialiser les comptes pour tous les mois
+                    maladie_count[maladie] = [0] * 12
+                maladie_count[maladie][month - 1] += 1
 
-                maladie_count[maladie][month - 1] += 1  # Utilisation de -1 pour indexer correctement
-
-            # Tri des mois extraits et conversion en noms de mois
             months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc']
-            months = [months[month - 1] for month in sorted(months_set)]  # Convertir les mois extraits en noms et trier
+            months = [months[month - 1] for month in sorted(months_set)]
 
-            # Préparer les données pour le graphique
             data = {
-                'months': months,  # Utiliser les mois extraits
-                'sales': []
+                'months': months,
+                'sales': [{'maladie': maladie, 'counts': counts} for maladie, counts in maladie_count.items()]
             }
-
-            # Remplir les données des ventes pour chaque maladie
-            for maladie, counts in maladie_count.items():
-                data['sales'].append({
-                    'maladie': maladie,
-                    'counts': counts
-                })
+            template_name = 'synthese.html'
 
         elif categorie == "travaux":
             operation = conn.execute(
-                'SELECT type_travail, operation_culturale, id_exploitation, salarie_id, strftime("%H:%M:%S", Duree) as duree, id_operation_sanitaire, '
-                'strftime("%d/%m/%Y", date_travail) as date, strftime("%m", date_travail) as month '
+                'SELECT type_travail, operation_culturale, id_exploitation, salarie_id, '
+                'strftime("%H:%M:%S", Duree) as duree, id_operation_sanitaire, '
+                'strftime("%d/%m/%Y", date_travail) as date '
                 'FROM travaux_agricoles WHERE strftime("%Y", date_travail) = ?',
                 (annee,)
             ).fetchall()
-
-            operation_data = [dict(row) for row in operation]
-
-            # Log the formatted result
-            app.logger.info(f"Query Results: {operation_data}")
+            template_name = 'synthese_travaux.html'
 
         elif categorie == "salaries":
             operation = conn.execute(
-                'SELECT identifiant_sal, nom_salarie, prenom_salarie, '
-                'strftime("%d/%m/%Y", date_embauche) as date_embauche, id_exploitation, strftime("%m", date_embauche) as month '
+                'SELECT identifiant_sal, nom_salarie, prenom_salarie,date_embauche, '
+                'strftime("%d/%m/%Y", date_embauche) as date_embauche, id_exploitation '
                 'FROM salaries WHERE strftime("%Y", date_embauche) = ?',
                 (annee,)
             ).fetchall()
-
-            operation_data = [dict(row) for row in operation]
-
-            # Log the formatted result
-            app.logger.info(f"Query Results salaries: {operation_data}")
-
+            template_name = 'synthese_salaries.html'
 
         elif categorie == "chefs":
             operation = conn.execute(
-                'SELECT username_chef, nom_chef, prenom_chef, '
-                ' id_exploitation FROM chefs_exploitation',
+                'SELECT prenom_chef, nom_chef, username_chef, id_exploitation '
+                'FROM chefs_exploitation'
             ).fetchall()
-
-            operation_data = [dict(row) for row in operation]
-
-            # Log the formatted result
-            app.logger.info(f"Query Results salaries: {operation_data}")
-
-
-
+            template_name = 'synthese_chefs.html'
 
         conn.close()
 
-
-
+    # Render the chosen template
     return render_template(
-        'synthese.html',
+        template_name,
         operation=operation,
         data=data,
         annee=annee,

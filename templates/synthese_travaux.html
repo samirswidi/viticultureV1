@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Synthèses de tous les données</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flashes">
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% endwith %}
+    <!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+
+<!-- jsPDF for PDF Export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
+    <div class="container">
+      <form action="{{ url_for('synthese') }}" method="POST">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-3 col-12">
+                <label for="annee" class="form-label">Année</label>
+                <select id="annee" name="annee" class="form-control" required>
+                    <option value="2020">2020</option>
+                    <option value="2021">2021</option>
+                    <option value="2022">2022</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                </select>
+            </div>
+            <div class="col-md-6 col-12">
+                <label class="form-label">Catégorie</label>
+                <div class="d-flex flex-wrap gap-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="categorie" id="chefs" value="chefs" required>
+                        <label class="form-check-label" for="chefs">Chefs d'exploitation</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="categorie" id="salaries" value="salaries" required>
+                        <label class="form-check-label" for="salaries">Salariés</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="categorie" id="travaux" value="travaux" required>
+                        <label class="form-check-label" for="travaux">Travaux agricoles</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="categorie" id="sanitaire" value="sanitaire" required>
+                        <label class="form-check-label" for="sanitaire">Opérations sanitaires</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 text-end">
+                <button type="submit" class="btn btn-primary">Afficher Synthèse</button>
+            </div>
+        </div>
+    </form>
+    
+    </div>
+    <div class="container">
+        {% if categorie == "sanitaire" %}
+            <!-- Table pour afficher les données -->
+            <table id="operations-table" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Maladie Visée</th>
+                        <th>Stade Maladie</th>
+                        <th>Méthodes Traitement</th>
+                        <th>Observations</th>
+                        <th>Date Traitement</th>
+                        <th>ID Exploitation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in operation %}
+                    <tr>
+                        <td>{{ row['maladie_visee'] }}</td>
+                        <td>{{ row['stade_maladie'] }}</td>
+                        <td>{{ row['methodes_traitement'] }}</td>
+                        <td>{{ row['observations'] }}</td>
+                        <td>{{ row['date_traitement'] }}</td>
+                        <td>{{ row['id_exploitation'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <br><br>
+        {% elif categorie == "travaux"  %}
+           <table id="operations-table" class="table table-striped table-bordered">
+                <thead>
+                    {# add id and name salarie, nom opetratoin sanitaire etc #}
+                    <tr>
+                        <th>Type Travaux</th>
+                        <th>Operation culturale</th>
+                        <th>Durée</th>
+                        <th>Date traveil</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in operation %}
+                    <tr>
+                        <td>{{ row['type_travail'] }}</td>
+                        <td>{{ row['operation_culturale'] }}</td>
+                        <td>{{ row['duree'] }}</td>
+                        <td>{{ row['date'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% elif categorie == "salaries"  %}
+           <table id="operations-table" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Identifiant</th>
+                        <th>Nom</th>
+                        <th>Prenom</th>
+                        <th>Date Embauche</th>
+                        <th>Id exploitation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in operation %}
+                    <tr>
+                        <td>{{ row['identifiant_sal'] }}</td>
+                        <td>{{ row['nom_salarie'] }}</td>
+                        <td>{{ row['prenom_salarie'] }}</td>
+                        <td>{{ row['date_embauche'] }}</td>
+                        <td>{{ row['id_exploitation'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+          {% elif categorie == "chefs"  %}
+           <table id="operations-table" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Prenom</th>
+                        <th>Nom</th>
+                        <th>Email</th>
+                        <th>Id exploitation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in operation %}
+                    <tr>
+                        <td>{{ row['nom_chef'] }}</td>
+                        <td>{{ row['prenom_chef'] }}</td>
+                        <td>{{ row['username_chef'] }}</td>
+                        <td>{{ row['id_exploitation'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    
+       
+    
+    <script>
+        $(document).ready(function () {
+            // Initialiser DataTables
+            $('#operations-table').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                lengthChange: true,
+                pageLength: 10,
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'csv',
+                        text: 'Exporter en CSV',
+                        className: 'btn btn-secondary'
+                    },
+                    {
+                        extend: 'print',
+                        text: 'Imprimer',
+                        className: 'btn btn-secondary'
+                    }
+                ]
+            });
+        
+            
+        
+            // Exporter en PDF
+            $('#export-pdf').click(function () {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+        
+                // Titre du PDF
+                doc.text('Operation Sanitaire', 10, 10);
+        
+                // Exporter les données de la table
+                let rows = [];
+                $('#operations-table tbody tr').each(function () {
+                    let row = [];
+                    $(this).find('td').each(function () {
+                        row.push($(this).text());
+                    });
+                    rows.push(row);
+                });
+        
+                doc.autoTable({
+                    head: [['Maladie Visée', 'Stade Maladie', 'Méthodes Traitement', 'Observations', 'Date Traitement', 'ID Exploitation']],
+                    body: rows
+                });
+        
+                // Télécharger le PDF
+                doc.save('operation_sanitaire.pdf');
+            });
+        });
+        </script>
+        </div>
+        <div class="container" style="    background-color: white;">
+    {% if data['sales'] %}
+    <h2>Liste des opérations Sanitaire</h2>
+    <canvas id="myChart" width="400" height="200"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        var ctx = document.getElementById('myChart').getContext('2d');
+
+        // Générer des couleurs dynamiques en fonction du nombre de maladies
+        var colors = [
+            'rgba(255, 99, 132, 0.6)',  // Couleur 1
+            'rgba(54, 162, 235, 0.6)',  // Couleur 2
+            'rgba(255, 206, 86, 0.6)',  // Couleur 3
+            'rgba(75, 192, 192, 0.6)',  // Couleur 4
+            'rgba(153, 102, 255, 0.6)', // Couleur 5
+            'rgba(255, 159, 64, 0.6)',  // Couleur 6
+            // Ajoutez d'autres couleurs si nécessaire
+        ];
+
+        // Créer une map des couleurs basées sur les maladies
+        var colorMap = {};
+        var usedColors = 0;
+
+        {% for item in data['sales'] %}
+            var maladie = "{{ item['maladie'] }}";
+            if (!colorMap[maladie] && usedColors < colors.length) {
+                colorMap[maladie] = colors[usedColors];
+                usedColors++;
+            }
+        {% endfor %}
+
+        var myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ data['months'] | tojson }},
+                datasets: [
+                    {% for item in data['sales'] %}
+                    {
+                        label: "{{ item['maladie'] }}",
+                        data: {{ item['counts'] | tojson }},
+                        borderColor: colorMap["{{ item['maladie'] }}"] || 'rgba(75, 192, 192, 1)',  // Utiliser la couleur de colorMap ou une couleur par défaut
+                        backgroundColor: colorMap["{{ item['maladie'] }}"] || 'rgba(75, 192, 192, 0.2)',  // Utiliser la couleur de colorMap ou une couleur par défaut
+                        borderWidth: 1
+                    },
+                    {% endfor %}
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
+{% endif %}
+
+     </div>
+ 
+ 
+        
+{% endblock %}
