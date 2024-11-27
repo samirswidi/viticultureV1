@@ -223,36 +223,36 @@
         </script>
         </div>
         <div class="container" style="    background-color: white;">
-    {% if data['sales'] %}
-    <h2>Liste des opérations Sanitaire</h2>
+  
+    <h2>Liste des travaux</h2>
     <canvas id="myChart" width="400" height="200"></canvas>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         var ctx = document.getElementById('myChart').getContext('2d');
-
-        // Générer des couleurs dynamiques en fonction du nombre de maladies
+    
+        // Generate dynamic colors based on the number of types of travaux
         var colors = [
-            'rgba(255, 99, 132, 0.6)',  // Couleur 1
-            'rgba(54, 162, 235, 0.6)',  // Couleur 2
-            'rgba(255, 206, 86, 0.6)',  // Couleur 3
-            'rgba(75, 192, 192, 0.6)',  // Couleur 4
-            'rgba(153, 102, 255, 0.6)', // Couleur 5
-            'rgba(255, 159, 64, 0.6)',  // Couleur 6
-            // Ajoutez d'autres couleurs si nécessaire
+            'rgba(255, 99, 132, 0.6)',  // Color 1
+            'rgba(54, 162, 235, 0.6)',  // Color 2
+            'rgba(255, 206, 86, 0.6)',  // Color 3
+            'rgba(75, 192, 192, 0.6)',  // Color 4
+            'rgba(153, 102, 255, 0.6)', // Color 5
+            'rgba(255, 159, 64, 0.6)',  // Color 6
+            // Add more colors as needed
         ];
-
-        // Créer une map des couleurs basées sur les maladies
+    
+        // Create a map for colors based on the type of travaux
         var colorMap = {};
         var usedColors = 0;
-
+    
         {% for item in data['sales'] %}
-            var maladie = "{{ item['maladie'] }}";
-            if (!colorMap[maladie] && usedColors < colors.length) {
-                colorMap[maladie] = colors[usedColors];
+            var travail = "{{ item['travail'] }}";
+            if (!colorMap[travail] && usedColors < colors.length) {
+                colorMap[travail] = colors[usedColors];
                 usedColors++;
             }
         {% endfor %}
-
+    
         var myChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -260,29 +260,38 @@
                 datasets: [
                     {% for item in data['sales'] %}
                     {
-                        label: "{{ item['maladie'] }}",
+                        label: "{{ item['travail'] }}",
                         data: {{ item['counts'] | tojson }},
-                        borderColor: colorMap["{{ item['maladie'] }}"] || 'rgba(75, 192, 192, 1)',  // Utiliser la couleur de colorMap ou une couleur par défaut
-                        backgroundColor: colorMap["{{ item['maladie'] }}"] || 'rgba(75, 192, 192, 0.2)',  // Utiliser la couleur de colorMap ou une couleur par défaut
+                        borderColor: colorMap["{{ item['travail'] }}"] || 'rgba(75, 192, 192, 1)',  // Use color from colorMap or a default color
+                        backgroundColor: colorMap["{{ item['travail'] }}"] || 'rgba(75, 192, 192, 0.2)',  // Use color from colorMap or a default color
                         borderWidth: 1
                     },
                     {% endfor %}
                 ]
             },
             options: {
+                responsive: true,
                 scales: {
                     y: {
                         beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.raw;
+                            }
+                        }
                     }
                 }
             }
         });
     </script>
-
-{% endif %}
-
-     </div>
- 
+    
  
         
 {% endblock %}

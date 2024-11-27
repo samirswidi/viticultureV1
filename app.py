@@ -791,26 +791,72 @@ def synthese():
             operation = conn.execute(
                 'SELECT type_travail, operation_culturale, id_exploitation, salarie_id, '
                 'strftime("%H:%M:%S", Duree) as duree, id_operation_sanitaire, '
-                'strftime("%d/%m/%Y", date_travail) as date '
+                'strftime("%d/%m/%Y", date_travail) as date, strftime("%m", date_travail) as month '
                 'FROM travaux_agricoles WHERE strftime("%Y", date_travail) = ?',
                 (annee,)
             ).fetchall()
+
+            travail_count = {}
+            months_set = set()
+
+            for row in operation:
+                month = int(row['month'])
+                travail = row['type_travail']
+                months_set.add(month)
+
+                if travail not in travail_count:
+                    travail_count[travail] = [0] * 12
+                travail_count[travail][month - 1] += 1
+
+            months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc']
+            months = [months[month - 1] for month in sorted(months_set)]
+
+            data = {
+                'months': months,
+                'sales': [{'travail': travail, 'counts': counts} for travail, counts in travail_count.items()]
+            }
             template_name = 'synthese_travaux.html'
 
         elif categorie == "salaries":
             operation = conn.execute(
-                'SELECT identifiant_sal, nom_salarie, prenom_salarie,date_embauche, '
-                'strftime("%d/%m/%Y", date_embauche) as date_embauche, id_exploitation '
+                'SELECT identifiant_sal, nom_salarie, prenom_salarie, date_embauche, '
+                'strftime("%d/%m/%Y", date_embauche) as date_embauche, strftime("%m", date_embauche) as month, id_exploitation '
                 'FROM salaries WHERE strftime("%Y", date_embauche) = ?',
                 (annee,)
             ).fetchall()
+
+            salaries_count = [0] * 12  # Initialise un tableau pour compter les salariés par mois
+
+            for row in operation:
+                month = int(row['month'])  # Obtenir le mois de la date d'embauche
+                salaries_count[month - 1] += 1  # Incrémente le nombre de salariés pour le mois correspondant
+
+            months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc']
+
+            data = {
+                'months': months,
+                'counts': salaries_count  # Données prêtes pour le frontend
+            }
             template_name = 'synthese_salaries.html'
+
 
         elif categorie == "chefs":
             operation = conn.execute(
                 'SELECT prenom_chef, nom_chef, username_chef, id_exploitation '
                 'FROM chefs_exploitation'
             ).fetchall()
+
+            # Regrouper et compter les chefs
+            chefs_count = {}
+            for row in operation:
+                chef = f"{row['prenom_chef']} {row['nom_chef']}"
+                chefs_count[chef] = chefs_count.get(chef, 0) + 1
+
+            # Préparer les données pour le graphique
+            data = {
+                'chefs': list(chefs_count.keys()),  # Liste des noms de chefs
+                'counts': list(chefs_count.values())  # Fréquences des chefs
+            }
             template_name = 'synthese_chefs.html'
 
         conn.close()

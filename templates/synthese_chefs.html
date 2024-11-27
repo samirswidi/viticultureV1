@@ -222,67 +222,56 @@
         });
         </script>
         </div>
-        <div class="container" style="    background-color: white;">
-    {% if data['sales'] %}
-    <h2>Liste des opérations Sanitaire</h2>
-    <canvas id="myChart" width="400" height="200"></canvas>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        var ctx = document.getElementById('myChart').getContext('2d');
-
-        // Générer des couleurs dynamiques en fonction du nombre de maladies
-        var colors = [
-            'rgba(255, 99, 132, 0.6)',  // Couleur 1
-            'rgba(54, 162, 235, 0.6)',  // Couleur 2
-            'rgba(255, 206, 86, 0.6)',  // Couleur 3
-            'rgba(75, 192, 192, 0.6)',  // Couleur 4
-            'rgba(153, 102, 255, 0.6)', // Couleur 5
-            'rgba(255, 159, 64, 0.6)',  // Couleur 6
-            // Ajoutez d'autres couleurs si nécessaire
-        ];
-
-        // Créer une map des couleurs basées sur les maladies
-        var colorMap = {};
-        var usedColors = 0;
-
-        {% for item in data['sales'] %}
-            var maladie = "{{ item['maladie'] }}";
-            if (!colorMap[maladie] && usedColors < colors.length) {
-                colorMap[maladie] = colors[usedColors];
-                usedColors++;
-            }
-        {% endfor %}
-
-        var myChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: {{ data['months'] | tojson }},
-                datasets: [
-                    {% for item in data['sales'] %}
-                    {
-                        label: "{{ item['maladie'] }}",
-                        data: {{ item['counts'] | tojson }},
-                        borderColor: colorMap["{{ item['maladie'] }}"] || 'rgba(75, 192, 192, 1)',  // Utiliser la couleur de colorMap ou une couleur par défaut
-                        backgroundColor: colorMap["{{ item['maladie'] }}"] || 'rgba(75, 192, 192, 0.2)',  // Utiliser la couleur de colorMap ou une couleur par défaut
+        {% if data['chefs'] %}
+        <h2>Répartition des Chefs d'Exploitation</h2>
+        <canvas id="chefsChart" width="400" height="200"></canvas>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            var ctx = document.getElementById('chefsChart').getContext('2d');
+        
+            var myChart = new Chart(ctx, {
+                type: 'bar',  // Graphique en barres
+                data: {
+                    labels: {{ data['chefs'] | tojson }},  // Noms des chefs
+                    datasets: [{
+                        label: 'Nombre d\'entrées par chef',
+                        data: {{ data['counts'] | tojson }},  // Fréquences des chefs
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',  // Couleur des barres
+                        borderColor: 'rgba(54, 162, 235, 1)',  // Couleur des contours
                         borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Nombre d\'entrées'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Chefs d\'exploitation'
+                            }
+                        }
                     },
-                    {% endfor %}
-                ]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return context.raw + " entrée(s)";
+                                }
+                            }
+                        }
                     }
                 }
-            }
-        });
-    </script>
-
-{% endif %}
-
-     </div>
- 
+            });
+        </script>
+        {% endif %}
+        
  
         
 {% endblock %}
