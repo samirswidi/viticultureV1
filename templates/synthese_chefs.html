@@ -100,7 +100,7 @@
         {% elif categorie == "travaux"  %}
            <table id="operations-table" class="table table-striped table-bordered">
                 <thead>
-                    {# add id and name salarie, nom opetratoin sanitaire etc #}
+                    {# add id and name salarie, nom opetratoin sanitaire #}
                     <tr>
                         <th>Type Travaux</th>
                         <th>Operation culturale</th>
@@ -224,7 +224,9 @@
         </div>
         {% if data['chefs'] %}
         <h2>Répartition des Chefs d'Exploitation</h2>
-        <canvas id="chefsChart" width="400" height="200"></canvas>
+					<div class="graph-container">
+        		<canvas id="chefsChart" width="400" height="200"></canvas>
+					</div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             var ctx = document.getElementById('chefsChart').getContext('2d');

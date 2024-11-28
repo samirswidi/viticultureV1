@@ -284,3 +284,7 @@ ul {
   .select-items div:hover, .same-as-selected {
     background-color: rgba(0, 0, 0, 0.1);
   }
+
+  .graph-container {
+      background-color: #FFFFFF;
+  }
