@@ -288,3 +288,7 @@ ul {
   .graph-container {
       background-color: #FFFFFF;
   }
+
+  .dataTables_filter {
+      margin-bottom: .6rem;
+  }
