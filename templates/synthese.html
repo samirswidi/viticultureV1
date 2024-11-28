@@ -28,7 +28,7 @@
 <!-- jsPDF for PDF Export -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 
-    <div class="container">
+    <div class="container mb-3">
       <form action="{{ url_for('synthese') }}" method="POST">
         <div class="row g-3 align-items-center">
             <div class="col-md-3 col-12">
@@ -41,7 +41,7 @@
                     <option value="2024" {% if annee == '2024' %}selected{% endif %}>2024</option>
                 </select>
             </div>
-            <div class="col-md-6 col-12">
+            <div class="col-md-auto col-12">
                 <label class="form-label">Catégorie</label>
                 <div class="d-flex flex-wrap gap-3">
                     <div class="form-check"> 
@@ -62,7 +62,8 @@
                     </div>
                 </div>
             </div>
-            <div class="col-12 text-end">
+						<div class="col"></div>
+            <div class="col-auto">
                 <button type="submit" class="btn btn-primary">Afficher Synthèse</button>
             </div>
         </div>
