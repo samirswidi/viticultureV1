@@ -293,3 +293,7 @@ ul {
   .dataTables_filter {
       margin-bottom: .6rem;
   }
+
+  .dataTables_wrapper .dataTables_filter input {
+      background-color: #FFFFFF !important;
+  }
