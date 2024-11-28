@@ -287,6 +287,7 @@ ul {
 
   .graph-container {
       background-color: #FFFFFF;
+      border-radius: 3px;
   }
 
   .dataTables_filter {
