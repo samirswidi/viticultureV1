@@ -35,15 +35,17 @@ GitHub est utilisé pour la gestion du code source et la collaboration entre les
 #### Justifier le choix de GitHub
 GitHub offre une intégration facile avec les outils de développement, une gestion efficace des versions, et une collaboration simplifiée.
 
-#### Containerisation
-La containerisation avec Docker permet d'isoler l'application et ses dépendances, facilitant ainsi le déploiement et la scalabilité.
+#### Technologies d'IA
 
-#### Justifier le choix de Docker
-| Critère          | Docker | Alternatives |
-|------------------|--------|--------------|
-| Isolation        | Oui    | Oui          |
-| Scalabilité      | Oui    | Variable     |
-| Facilité d'utilisation | Oui | Variable  |
+**K-means Clustering** :
+- **Utilisation** : Le clustering K-means a été utilisé pour partitionner les données numériques relatives aux opérations agricoles en clusters distincts. Cela a aidé à identifier des motifs et à regrouper des opérations similaires.
+- **Application** : Par exemple, le clustering de différents types d'opérations agricoles en fonction de leur durée et de leur fréquence pour optimiser l'allocation des ressources et la planification.
+
+**K-modes Clustering** :
+- **Utilisation** : Le clustering K-modes a été utilisé pour le clustering des données catégorielles. Cet algorithme est adapté pour traiter des données non numériques, telles que les types de cultures ou les catégories de tâches agricoles.
+- **Application** : Par exemple, le clustering de différents types de cultures en fonction de leurs caractéristiques et méthodes de traitement pour améliorer la gestion des cultures et les processus de prise de décision.
+
+Ces techniques de clustering ont aidé à analyser et organiser les données plus efficacement, conduisant à de meilleures perspectives et à une gestion plus efficace des opérations agricoles.
 
 #### Conclusion
 Les outils et technologies choisis permettent de mettre en place une solution efficace et fiable pour le développement et le déploiement de l'application.
