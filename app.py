@@ -1,21 +1,25 @@
-import locale
+import locale  
 
-from flask import Flask, render_template, request, redirect, url_for,session, flash
-import sqlite3
-import hashlib
-import smtplib
-from email.mime.text import MIMEText
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report, confusion_matrix,silhouette_score, pairwise_distances
+from flask import Flask, render_template, request, redirect, url_for, session, flash  
+import sqlite3  
+import hashlib  
+import smtplib  
+from email.mime.multipart import MIMEMultipart  
+from email.mime.text import MIMEText  
+from email.mime.base import MIMEBase  
+from email import encoders  
+import pandas as pd  
+from sklearn.model_selection import train_test_split  
+from sklearn.preprocessing import LabelEncoder  
+from sklearn.linear_model import LogisticRegression  
+from sklearn.metrics import classification_report, confusion_matrix, silhouette_score, pairwise_distances  
+from kmodes.kmodes import KModes  
 
-from kmodes.kmodes import KModes
+import matplotlib.pyplot as plt  
+import io  
+import base64  
+import csv  
 
-import matplotlib.pyplot as plt
-import io
-import base64
 
 app = Flask(__name__)
 app.secret_key = 'samirswidisecretkey'
@@ -28,39 +32,82 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row  # Retourne les résultats sous forme de dictionnaire
     return conn
 # Page d'accueil (redirection vers login si non connecté)
-def send_email(chef_nom):
-    msg = MIMEText(f"La saisie mensuelle des travaux a été effectuée par {chef_nom}.")
+def generer_fichier_csv(travaux):
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Ajouter les en-têtes
+    writer.writerow(["nom salrie","prenom salrie","operation sanitaire","duree","Type Travail", "Date Travail"])
+    
+    # Ajouter les données
+    for travail in travaux:
+        writer.writerow([
+            
+
+            travail['nom_salarie'],
+            travail['prenom_salarie'],
+            travail['operation_culturale'],
+            travail['Duree'],
+            travail['type_travail'],
+            travail['date_travail'],
+           
+        ])
+    
+    output.seek(0)
+    return output.getvalue()
+def send_email(chef_nom, travaux):
+    # Générer le fichier CSV
+    csv_data = generer_fichier_csv(travaux)
+    
+    # Créer le message
+    msg = MIMEMultipart()
     msg['Subject'] = 'Saisie Mensuelle Effectuée'
     msg['From'] = 'no-reply@exploitation.com'
     msg['To'] = "samirswidi@gmail.com"
-
+    
+    # Ajouter le corps de l'email
+    body = f"La saisie mensuelle des travaux a été effectuée par {chef_nom}."
+    msg.attach(MIMEText(body, 'plain'))
+    
+    # Ajouter le fichier CSV en pièce jointe
+    part = MIMEBase('application', 'octet-stream')
+    part.set_payload(csv_data.encode('utf-8'))
+    encoders.encode_base64(part)
+    part.add_header('Content-Disposition', 'attachment', filename='travaux_mensuels.csv')
+    msg.attach(part)
+    
+    # Envoyer l'email
     try:
         with smtplib.SMTP('smtp.gmail.com', 587) as server:
             server.starttls()
             server.login('samirswidi@gmail.com', 'dmxm dxoo evut fptv')  # Remplacez par votre mot de passe d'application
-            server.sendmail('no-reply@exploitation.com', 'samirswidi@gmail.com', msg.as_string())
+            server.send_message(msg)
     except Exception as e:
-        flash(f"Erreur lors de l'envoi de l'email : {e}", "error")
-@app.route('/envoiemail/<string:nom>', methods=['POST'])  
+        raise Exception(f"Erreur lors de l'envoi de l'email : {e}")
+@app.route('/envoiemail/<string:nom>', methods=['POST'])
 def envoimail(nom):
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
-    # Envoyer l'email
+    # Récupérer les travaux depuis la base de données
+    conn = get_db_connection()
+    travaux = conn.execute(f'''
+        SELECT id_travail, type_travail, date_travail, salarie_id,salaries.nom_salarie ,salaries.prenom_salarie ,
+                           operation_culturale, Duree FROM travaux_agricoles 
+        JOIN exploitations ON exploitations.id_exploitation = travaux_agricoles.id_exploitation 
+        JOIN salaries ON salaries.id_salarie = travaux_agricoles.salarie_id
+    ''').fetchall()
+    conn.close()
+    
+    # Envoyer l'email avec la pièce jointe
     try:
-        send_email(nom)
+        send_email(nom, travaux)
         flash("Email envoyé avec succès.", "success")
-        conn = get_db_connection()
-        travaux = conn.execute('SELECT * FROM travaux_agricoles  join exploitations on exploitations.id_exploitation=travaux_agricoles.id_exploitation join salaries on salaries.id_salarie=travaux_agricoles.salarie_id ').fetchall()
-        conn.close()
-        return redirect(url_for('travaux'))
-        
     except Exception as e:
         flash(f"Erreur lors de l'envoi de l'email : {e}", "error")
+    
+    return redirect(url_for('travaux'))
 
-    
-    
-    return render_template('travaux_agricoles.html',travaux=travaux)
 @app.route('/')
 def index():
     if 'user_id' not in session:
