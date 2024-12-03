@@ -14,7 +14,7 @@ table2 = 'chefs_exploitation'
 table3 = 'salaries'
 table4 = 'travaux_agricoles'
 table5 = 'operations_phytosanitaires'
-table6 = 'synthese_annuelle'
+
 
 # Création des tables
 def create_tables():
@@ -68,13 +68,7 @@ def create_tables():
                     FOREIGN KEY(id_exploitation) REFERENCES {table1}(id_exploitation)
                 )''')
 
-    c.execute(f'''CREATE TABLE IF NOT EXISTS {table6} (
-                    id_synthese INTEGER PRIMARY KEY,
-                    annee INTEGER,
-                    production_totale REAL,
-                    id_exploitation INTEGER,
-                    FOREIGN KEY(id_exploitation) REFERENCES {table1}(id_exploitation)
-                )''')
+
     c.execute(f'''CREATE TABLE IF NOT EXISTS authentification (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     login TEXT NOT NULL,
