@@ -462,6 +462,7 @@ def estime_duree():
         conn = get_db_connection()
         travaux = conn.execute('SELECT type_travail,operation_culturale,Duree FROM travaux_agricoles ').fetchall()
         conn.close()
+        return render_template('travaux_agricoles.html', travaux=travaux)
 # route pour modifier travail
 @app.route('/travaux/edit/<int:id>', methods=('GET', 'POST'))
 def edit_travail(id):
