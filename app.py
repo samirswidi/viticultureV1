@@ -18,6 +18,9 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
+from sklearn.metrics import mean_squared_error, r2_score
+import numpy as np
+
 import matplotlib.pyplot as plt  
 import io  
 import base64  
@@ -484,28 +487,58 @@ def add_travail():
         exploitations=exploitations,
         salaries=salaries
     )
-
 def train_model_duree():
+    # Connexion à la base de données et récupération des données
     conn = get_db_connection()
-    travaux = pd.read_sql_query('SELECT type_travail, operation_culturale, id_exploitation, Duree FROM travaux_agricoles', conn)
+    travaux = pd.read_sql_query(
+        'SELECT type_travail, operation_culturale, Duree FROM travaux_agricoles',
+        conn
+    )
     conn.close()
 
+    # Vérifier s'il y a des données suffisantes
+    if travaux.shape[0] < 2:
+        print("Pas assez de données pour entraîner le modèle.")
+        return
+
     # Encodage et séparation des données
-    X = travaux[['type_travail', 'operation_culturale', 'id_exploitation']]
+    X = travaux[['type_travail', 'operation_culturale']]
     y = travaux['Duree']
 
     # Pipeline : Encodage + Régression
     preprocessor = ColumnTransformer(
         transformers=[
-            ('encoder', OneHotEncoder(handle_unknown='ignore'), ['type_travail', 'operation_culturale', 'id_exploitation'])
+            ('encoder', OneHotEncoder(handle_unknown='ignore'), ['type_travail', 'operation_culturale'])
         ]
     )
     model = Pipeline(steps=[('preprocessor', preprocessor), ('regressor', LinearRegression())])
-    model.fit(X, y)
+
+    # Diviser les données en ensembles d'entraînement et de test
+    from sklearn.model_selection import train_test_split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    # Entraîner le modèle
+    model.fit(X_train, y_train)
+
+    # Faire des prédictions sur l'ensemble de test
+    y_pred = model.predict(X_test)
+
+    # Calcul des métriques d'évaluation
+    mse = mean_squared_error(y_test, y_pred)
+    rmse = np.sqrt(mse)
+    r2 = r2_score(y_test, y_pred)
+
+    # Afficher les métriques dans la console
+    print("Évaluation du modèle :")
+    print(f"Racine de l'erreur quadratique moyenne (RMSE) : {rmse:.2f}")
+    print(f"Coefficient de détermination (R²) : {r2:.2f}")
+    print(f"Erreur quadratique moyenne (MSE) : {mse:.2f}")
 
     # Sauvegarder le modèle
     with open('model.pkl', 'wb') as file:
         pickle.dump(model, file)
+
+    print("Le modèle a été entraîné et sauvegardé avec succès.")
 
 # Appeler cette fonction pour entraîner le modèle
 train_model_duree()
@@ -522,7 +555,7 @@ def estime_duree():
     if request.method == 'POST':
         # Récupérer les données du formulaire
         type_travail = request.form['type_travail']
-        id_exploitation = request.form['id_exploitation']
+        #id_exploitation = request.form['id_exploitation']
         operation_culturale = request.form['operation_culturale']
 
         # Charger le modèle pré-entraîné
@@ -532,8 +565,8 @@ def estime_duree():
         # Préparer les données pour la prédiction
         input_data = pd.DataFrame({
             'type_travail': [type_travail],
-            'operation_culturale': [operation_culturale],
-            'id_exploitation': [id_exploitation]
+            'operation_culturale': [operation_culturale]
+            
         })
 
         # Faire une prédiction
