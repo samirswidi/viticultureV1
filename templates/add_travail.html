@@ -1,25 +1,3 @@
-{% extends 'base.html' %}
-
-{% block content %}
-<h2>Ajouter un travail agricole</h2>
-
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-<ul class="flashes">
-    {% for category, message in messages %}
-    <li class="{{ category }}">{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
-{% endwith %}
-
-<!-- Afficher la durée estimée si disponible -->
-{% if predicted_duree is not none %}
-<div class="alert alert-info">
-    Durée estimée pour ce travail : {{ predicted_duree }} heures.
-</div>
-{% endif %}
-
 <form action="{{ url_for('add_travail') }}" method="POST">
     <div class="input-field">
         <label>Date travail</label><br><br>
@@ -65,12 +43,11 @@
         </select>
     </div>
     <div class="input-field">
-        <input type="text" name="duree" id="duree" value="{{ predicted_duree if predicted_duree else '' }}" required>
+        <input type="text" name="duree" id="duree" value="{{ predicted_duree if predicted_duree else '' }}">
         <label>Durée travail</label>
     </div>
-    <button type="submit" class="button">Ajouter</button>
+
+    <button type="submit" name="action" value="add" class="button">Ajouter</button>
+    <button type="submit" name="action" value="estimate" class="button">Estimer durée</button>
 </form>
-<form action="{{ url_for('estime_duree') }}" method="POST">
-    <button class="button" type="submit">Estimer durée</button>
-</form>
-{% endblock %}
+

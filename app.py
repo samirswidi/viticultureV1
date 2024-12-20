@@ -14,7 +14,10 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LogisticRegression  
 from sklearn.metrics import classification_report, confusion_matrix, silhouette_score, pairwise_distances  
 from kmodes.kmodes import KModes  
-
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 import matplotlib.pyplot as plt  
 import io  
 import base64  
@@ -410,48 +413,77 @@ def travaux():
     
     return render_template('travaux_agricoles.html', travaux=travaux)
 # Route pour ajouter un travail
-@app.route('/travaux/add_travail', methods=('GET', 'POST'))
+@app.route('/add_travail', methods=('GET', 'POST'))
 def add_travail():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+
     conn = get_db_connection()
-    exploitations = conn.execute('SELECT * FROM exploitations').fetchall()  # Récupérer toutes les exploitations
-    salaries=conn.execute('SELECT * FROM salaries').fetchall()  # Récupérer toutes les salaries
-    conn.close()    
+    exploitations = conn.execute('SELECT * FROM exploitations').fetchall()
+    salaries = conn.execute('SELECT * FROM salaries').fetchall()
+    conn.close()
+
     if request.method == 'POST':
-        type_travail=request.form['type_travail']
-        date_travail=request.form['date_travail']
-        id_exploitation=request.form['id_exploitation']
-        salarie_id=request.form['salarie_id']
-        operation_culturale=request.form['operation_culturale']
-        duree=request.form['duree']
-        id_operation_sanitaire=request.form['id_operation_sanitaire']
-        # Ouverture de la connexion
-        conn = get_db_connection()
-        
-        # Vérification si le salarié existe déjà
-        verif = conn.execute(f'''SELECT * FROM travaux_agricoles
-                              WHERE type_travail = ? and date_travail=? and id_exploitation=?
-                                and salarie_id=? and operation_culturale=? and duree=? and id_operation_sanitaire=?
-                             ''', (type_travail,date_travail,id_exploitation,salarie_id,operation_culturale,duree,id_operation_sanitaire, )).fetchone()
-        print('ok')
-        if verif:
-            flash('Travail déjà existe.', 'error')
-            conn.close()  # Fermer la connexion après la vérification
-            return render_template('add_travail.html', exploitations=exploitations)
-        else:
-            # Insertion du salarié dans la base de données
-            conn.execute(
-                'INSERT INTO travaux_agricoles (type_travail, date_travail, id_exploitation, salarie_id,operation_culturale,duree,id_operation_sanitaire) VALUES (?, ?, ?, ?,?,?,?)',
-                (type_travail, date_travail, id_exploitation, salarie_id,operation_culturale,duree,id_operation_sanitaire)
+        action = request.form.get('action')
+        type_travail = request.form['type_travail']
+        id_exploitation = request.form['id_exploitation']
+        operation_culturale = request.form['operation_culturale']
+
+        if action == 'estimate':  # Gestion de l'estimation
+            # Charger le modèle
+            with open('model.pkl', 'rb') as file:
+                model = pickle.load(file)
+
+            # Préparer les données pour la prédiction
+            input_data = pd.DataFrame({
+                'type_travail': [type_travail],
+                'operation_culturale': [operation_culturale],
+                'id_exploitation': [id_exploitation]
+            })
+
+            # Faire une prédiction
+            predicted_duree = model.predict(input_data)[0]
+
+            return render_template(
+                'add_travail.html',
+                predicted_duree=predicted_duree,
+                exploitations=exploitations,
+                salaries=salaries
             )
-            conn.commit()  # Enregistrer les modifications dans la base de données
-            flash('Travail ajouté avec succès.', 'success')
-            conn.close()  # Fermer la connexion après l'insertion
-            
-            return redirect(url_for('add_travail'))  # Redirection vers la même page après l'insertion
-    
-    return render_template('add_travail.html', exploitations=exploitations,salaries=salaries)
+
+        elif action == 'add':  # Gestion de l'ajout
+            date_travail = request.form['date_travail']
+            salarie_id = request.form['salarie_id']
+            duree = request.form['duree']
+
+            conn = get_db_connection()
+            verif = conn.execute(
+                '''SELECT * FROM travaux_agricoles
+                   WHERE type_travail = ? AND date_travail = ? AND id_exploitation = ?
+                         AND salarie_id = ? AND operation_culturale = ?''',
+                (type_travail, date_travail, id_exploitation, salarie_id, operation_culturale)
+            ).fetchone()
+
+            if verif:
+                flash('Travail déjà existant.', 'error')
+            else:
+                conn.execute(
+                    '''INSERT INTO travaux_agricoles (type_travail, date_travail, id_exploitation, salarie_id, operation_culturale, duree)
+                       VALUES (?, ?, ?, ?, ?, ?)''',
+                    (type_travail, date_travail, id_exploitation, salarie_id, operation_culturale, duree)
+                )
+                conn.commit()
+                flash('Travail ajouté avec succès.', 'success')
+            conn.close()
+
+            return redirect(url_for('add_travail'))
+
+    return render_template(
+        'add_travail.html',
+        predicted_duree=None,
+        exploitations=exploitations,
+        salaries=salaries
+    )
 
 def train_model_duree():
     conn = get_db_connection()
