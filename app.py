@@ -453,16 +453,76 @@ def add_travail():
     
     return render_template('add_travail.html', exploitations=exploitations,salaries=salaries)
 
+def train_model_duree():
+    conn = get_db_connection()
+    travaux = pd.read_sql_query('SELECT type_travail, operation_culturale, id_exploitation, Duree FROM travaux_agricoles', conn)
+    conn.close()
 
+    # Encodage et séparation des données
+    X = travaux[['type_travail', 'operation_culturale', 'id_exploitation']]
+    y = travaux['Duree']
+
+    # Pipeline : Encodage + Régression
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('encoder', OneHotEncoder(handle_unknown='ignore'), ['type_travail', 'operation_culturale', 'id_exploitation'])
+        ]
+    )
+    model = Pipeline(steps=[('preprocessor', preprocessor), ('regressor', LinearRegression())])
+    model.fit(X, y)
+
+    # Sauvegarder le modèle
+    with open('model.pkl', 'wb') as file:
+        pickle.dump(model, file)
+
+# Appeler cette fonction pour entraîner le modèle
+train_model_duree()
 @app.route('/estime_duree', methods=('GET', 'POST'))
 def estime_duree():
     if 'user_id' not in session:
-            return redirect(url_for('login'))
-        
-        conn = get_db_connection()
-        travaux = conn.execute('SELECT type_travail,operation_culturale,Duree FROM travaux_agricoles ').fetchall()
-        conn.close()
-        return render_template('travaux_agricoles.html', travaux=travaux)
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    exploitations = conn.execute('SELECT * FROM exploitations').fetchall()  # Récupérer toutes les exploitations
+    salaries = conn.execute('SELECT * FROM salaries').fetchall()  # Récupérer toutes les salaries
+    conn.close()
+
+    if request.method == 'POST':
+        # Récupérer les données du formulaire
+        type_travail = request.form['type_travail']
+        id_exploitation = request.form['id_exploitation']
+        operation_culturale = request.form['operation_culturale']
+
+        # Charger le modèle pré-entraîné
+        with open('model.pkl', 'rb') as file:
+            model = pickle.load(file)
+
+        # Préparer les données pour la prédiction
+        input_data = pd.DataFrame({
+            'type_travail': [type_travail],
+            'operation_culturale': [operation_culturale],
+            'id_exploitation': [id_exploitation]
+        })
+
+        # Faire une prédiction
+        predicted_duree = model.predict(input_data)[0]
+
+        # Rediriger vers le formulaire add_travail.html avec la durée estimée
+        return render_template(
+            'add_travail.html',
+            predicted_duree=predicted_duree,
+            exploitations=exploitations,
+            salaries=salaries
+        )
+
+    # Si méthode GET, afficher le formulaire initial
+    return render_template(
+        'add_travail.html',
+        predicted_duree=None,
+        exploitations=exploitations,
+        salaries=salaries
+    )
+
 # route pour modifier travail
 @app.route('/travaux/edit/<int:id>', methods=('GET', 'POST'))
 def edit_travail(id):

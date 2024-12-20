@@ -1,90 +1,76 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h2>Ajouter un travail agricole </h2>
-    
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <ul class="flashes">
-        {% for category, message in messages %}
-          <li class="{{ category }}">{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
-  
-  
-  
-  
-  
-  
-  
-    <form action="{{ url_for('add_travail') }}" method="POST">
-       
-       
-       
-        <div class="input-field">
-            <label>Date travail</label><br><br>
-            <input type="date"  name="date_travail" id="date_travail" required>
-           
-        </div>
-        <div  style="width:100%">
-            <label>Exploitation:</label>
-            <select id="id_exploitation" name="id_exploitation"  class="form-control"  required>
-                <option value="">Sélectionnez une exploitation</option>
-                {% for exploitation in exploitations %}
-                    <option value="{{ exploitation.id_exploitation }}"
-                     >{{ exploitation.nom_exploitation }}</option>
-                {% endfor %}
-            </select>
-           
-        </div>
-        <div  style="width:100%">
-            <label>Salarié:</label>
-            <select id="salarie_id" name="salarie_id"  class="form-control"  required>
-                <option value="">Sélectionnez un salarié</option>
-                {% for salarie in salaries %}
-                    <option value="{{ salarie.id_salarie }}" 
-                    
-                     >{{ salarie.nom_salarie }} {{ salarie.prenom_salarie }}</option>
-                {% endfor %}
-            </select>
-           
-        </div>
-       
-        <div  style="width:100%">
-            <label>Operation culturale :</label>
-            <select id="operation_culturale" name="operation_culturale"  class="form-control"  required>
-                
-                
-                <option value="Fertilisation">Fertilisation</option>
-                <option value="Pulvérisation">Pulvérisation</option>
-                <option value="Labour">Labour</option>
-               
-            </select>
-           
-        </div>
-        
-        
-        <div  style="width:100%">
-            <label>Travail à faire:</label>
-            <select id="type_travail" name="type_travail"   class="form-control"  required>
-                <option value="Plantation">Plantation</option>
-                <option value="Entretien">Entretien</option>
-                <option value="Récolte">Récolte</option>
-                <option value="Irrigation">Irrigation</option>
-              
-            </select>
-           
-        </div>
-        <div class="input-field">
-            <input type="text"  name="duree" id="duree" required>
-            <label>Duree travail</label>
-        </div>
-        <button type="submit" class="button"> Ajouter</button>
-      
-    </form>
-    <form action="{{ url_for('estime_duree') }}" method="POST">
-        <button class="button" type="submit">Estimer durée</button>
-    </form>
+<h2>Ajouter un travail agricole</h2>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flashes">
+    {% for category, message in messages %}
+    <li class="{{ category }}">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
+<!-- Afficher la durée estimée si disponible -->
+{% if predicted_duree is not none %}
+<div class="alert alert-info">
+    Durée estimée pour ce travail : {{ predicted_duree }} heures.
+</div>
+{% endif %}
+
+<form action="{{ url_for('add_travail') }}" method="POST">
+    <div class="input-field">
+        <label>Date travail</label><br><br>
+        <input type="date" name="date_travail" id="date_travail" required>
+    </div>
+    <div style="width:100%">
+        <label>Exploitation:</label>
+        <select id="id_exploitation" name="id_exploitation" class="form-control" required>
+            <option value="">Sélectionnez une exploitation</option>
+            {% for exploitation in exploitations %}
+            <option value="{{ exploitation.id_exploitation }}">
+                {{ exploitation.nom_exploitation }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div style="width:100%">
+        <label>Salarié:</label>
+        <select id="salarie_id" name="salarie_id" class="form-control" required>
+            <option value="">Sélectionnez un salarié</option>
+            {% for salarie in salaries %}
+            <option value="{{ salarie.id_salarie }}">
+                {{ salarie.nom_salarie }} {{ salarie.prenom_salarie }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div style="width:100%">
+        <label>Opération culturale :</label>
+        <select id="operation_culturale" name="operation_culturale" class="form-control" required>
+            <option value="Fertilisation">Fertilisation</option>
+            <option value="Pulvérisation">Pulvérisation</option>
+            <option value="Labour">Labour</option>
+        </select>
+    </div>
+    <div style="width:100%">
+        <label>Travail à faire:</label>
+        <select id="type_travail" name="type_travail" class="form-control" required>
+            <option value="Plantation">Plantation</option>
+            <option value="Entretien">Entretien</option>
+            <option value="Récolte">Récolte</option>
+            <option value="Irrigation">Irrigation</option>
+        </select>
+    </div>
+    <div class="input-field">
+        <input type="text" name="duree" id="duree" value="{{ predicted_duree if predicted_duree else '' }}" required>
+        <label>Durée travail</label>
+    </div>
+    <button type="submit" class="button">Ajouter</button>
+</form>
+<form action="{{ url_for('estime_duree') }}" method="POST">
+    <button class="button" type="submit">Estimer durée</button>
+</form>
 {% endblock %}
