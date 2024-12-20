@@ -84,4 +84,7 @@
         <button type="submit" class="button"> Ajouter</button>
       
     </form>
+    <form action="{{ url_for('estime_duree') }}" method="POST">
+        <button class="button" type="submit">Estimer durée</button>
+    </form>
 {% endblock %}
