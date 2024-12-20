@@ -22,23 +22,20 @@
     <form action="{{ url_for('add_travail') }}" method="POST">
        
        
+       
         <div class="input-field">
-            <input type="text"  name="duree" id="duree" required>
-            <label>Duree travail</label>
-        </div>
-        <div class="input-field">
+            <label>Date travail</label><br><br>
             <input type="date"  name="date_travail" id="date_travail" required>
-            <label>Date travail</label>
+           
         </div>
         <div  style="width:100%">
-            <label>Operation culturale :</label>
-            <select id="operation_culturale" name="operation_culturale"  class="form-control"  required>
-                
-                
-                <option value="Fertilisation">Fertilisation</option>
-                <option value="Pulvérisation">Pulvérisation</option>
-                <option value="Labour">Labour</option>
-               
+            <label>Exploitation:</label>
+            <select id="id_exploitation" name="id_exploitation"  class="form-control"  required>
+                <option value="">Sélectionnez une exploitation</option>
+                {% for exploitation in exploitations %}
+                    <option value="{{ exploitation.id_exploitation }}"
+                     >{{ exploitation.nom_exploitation }}</option>
+                {% endfor %}
             </select>
            
         </div>
@@ -54,28 +51,21 @@
             </select>
            
         </div>
+       
         <div  style="width:100%">
-            <label>Exploitation:</label>
-            <select id="id_exploitation" name="id_exploitation"  class="form-control"  required>
-                <option value="">Sélectionnez une exploitation</option>
-                {% for exploitation in exploitations %}
-                    <option value="{{ exploitation.id_exploitation }}"
-                     >{{ exploitation.nom_exploitation }}</option>
-                {% endfor %}
+            <label>Operation culturale :</label>
+            <select id="operation_culturale" name="operation_culturale"  class="form-control"  required>
+                
+                
+                <option value="Fertilisation">Fertilisation</option>
+                <option value="Pulvérisation">Pulvérisation</option>
+                <option value="Labour">Labour</option>
+               
             </select>
            
         </div>
-        <div  style="width:100%">
-            <label>Operation sanitaire:</label>
-            <select id="id_operation_sanitaire" name="id_operation_sanitaire"  class="form-control"  required>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-              
-            </select>
-           
-        </div>
+        
+        
         <div  style="width:100%">
             <label>Travail à faire:</label>
             <select id="type_travail" name="type_travail"   class="form-control"  required>
@@ -86,6 +76,10 @@
               
             </select>
            
+        </div>
+        <div class="input-field">
+            <input type="text"  name="duree" id="duree" required>
+            <label>Duree travail</label>
         </div>
         <button type="submit" class="button"> Ajouter</button>
       
