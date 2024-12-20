@@ -453,9 +453,15 @@ def add_travail():
     
     return render_template('add_travail.html', exploitations=exploitations,salaries=salaries)
 
-    
 
-
+@app.route('/estime_duree', methods=('GET', 'POST'))
+def estime_duree():
+    if 'user_id' not in session:
+            return redirect(url_for('login'))
+        
+        conn = get_db_connection()
+        travaux = conn.execute('SELECT type_travail,operation_culturale,Duree FROM travaux_agricoles ').fetchall()
+        conn.close()
 # route pour modifier travail
 @app.route('/travaux/edit/<int:id>', methods=('GET', 'POST'))
 def edit_travail(id):
