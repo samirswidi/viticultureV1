@@ -525,7 +525,7 @@ def train_model_duree():
     # Connexion à la base de données et récupération des données
     conn = get_db_connection()
     travaux = pd.read_sql_query(
-        'SELECT type_travail, operation_culturale, Duree FROM travaux_agricoles',
+        'SELECT type_travail, operation_culturale,id_exploitation, Duree FROM travaux_agricoles',
         conn
     )
     conn.close()
@@ -536,13 +536,13 @@ def train_model_duree():
         return
 
     # Encodage et séparation des données
-    X = travaux[['type_travail', 'operation_culturale']]
+    X = travaux[['type_travail', 'operation_culturale','id_exploitation']]
     y = travaux['Duree']
 
     # Pipeline : Encodage + Régression
     preprocessor = ColumnTransformer(
         transformers=[
-            ('encoder', OneHotEncoder(handle_unknown='ignore'), ['type_travail', 'operation_culturale'])
+            ('encoder', OneHotEncoder(handle_unknown='ignore'), ['type_travail', 'operation_culturale','id_exploitation'])
         ]
     )
     
