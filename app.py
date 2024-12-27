@@ -1,6 +1,6 @@
 import locale  
 import pickle
-from flask import Flask, render_template, request, redirect, url_for, session, flash  
+from flask import Flask, render_template, request, redirect, url_for, session, flash  ,jsonify
 import sqlite3  
 import hashlib  
 import smtplib  
@@ -487,6 +487,40 @@ def add_travail():
         exploitations=exploitations,
         salaries=salaries
     )
+@app.route('/estimate_duration', methods=['POST'])
+def estimate_duration():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    # Récupérer les données envoyées par AJAX
+    data = request.json
+    type_travail = data.get('type_travail', 0)  # Valeur par défaut : 0
+    id_exploitation = data.get('id_exploitation', 0)  # Valeur par défaut : 0
+    operation_culturale = data.get('operation_culturale', 0)  # Valeur par défaut : 0
+
+    # Charger le modèle
+    try:
+        with open('model.pkl', 'rb') as file:
+            model = pickle.load(file)
+    except Exception as e:
+        return jsonify({'error': f'Erreur lors du chargement du modèle: {str(e)}'}), 500
+
+    # Préparer les données pour la prédiction
+    try:
+        input_data = pd.DataFrame({
+            'type_travail': [type_travail],
+            'operation_culturale': [operation_culturale],
+            'id_exploitation': [id_exploitation]
+        })
+
+        # Faire une prédiction
+        predicted_duree = model.predict(input_data)[0]
+    except Exception as e:
+        return jsonify({'error': f'Erreur lors de la prédiction: {str(e)}'}), 500
+
+    # Retourner la durée estimée en JSON
+    return jsonify({'predicted_duree': predicted_duree})
+
 def train_model_duree():
     # Connexion à la base de données et récupération des données
     conn = get_db_connection()

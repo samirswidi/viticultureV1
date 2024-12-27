@@ -69,7 +69,56 @@
     </div>
 
     <button type="submit" name="action" value="add" class="button">Ajouter</button>
-    <button type="submit" name="action" value="estimate" class="button">Estimer durée</button>
+   
 </form>
+<button   value="estimate" class="button">Estimer durée</button>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const durationField = document.getElementById('duree');
+    const typeTravailField = document.getElementById('type_travail');
+    const idExploitationField = document.getElementById('id_exploitation');
+    const operationCulturaleField = document.getElementById('operation_culturale');
 
+    // Fonction pour récupérer les valeurs et envoyer une requête AJAX
+    function updateDuration() {
+        const typeTravail = typeTravailField.value || 0; // Prend 0 si non choisi
+        const idExploitation = idExploitationField.value || 0; // Prend 0 si non choisi
+        const operationCulturale = operationCulturaleField.value || 0; // Prend 0 si non choisi
+
+        // Envoyer une requête AJAX au serveur
+        fetch('/estimate_duration', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                type_travail: typeTravail,
+                id_exploitation: idExploitation,
+                operation_culturale: operationCulturale
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.predicted_duree !== undefined) {
+                // Mettre à jour le champ durée avec la durée estimée
+                durationField.value = data.predicted_duree;
+            } else if (data.error) {
+                durationField.value = ''; // Vider le champ en cas d'erreur
+                console.error('Erreur serveur:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la requête AJAX:', error);
+            durationField.value = ''; // Vider le champ en cas d'erreur
+        });
+    }
+
+    // Ajouter des gestionnaires d'événements pour chaque champ
+    typeTravailField.addEventListener('change', updateDuration);
+    idExploitationField.addEventListener('change', updateDuration);
+    operationCulturaleField.addEventListener('change', updateDuration);
+});
+
+    </script>
+    
 {% endblock %}
