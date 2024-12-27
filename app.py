@@ -545,6 +545,7 @@ def train_model_duree():
             ('encoder', OneHotEncoder(handle_unknown='ignore'), ['type_travail', 'operation_culturale'])
         ]
     )
+    
     model = Pipeline(steps=[('preprocessor', preprocessor), ('regressor', LinearRegression())])
 
     # Diviser les données en ensembles d'entraînement et de test
